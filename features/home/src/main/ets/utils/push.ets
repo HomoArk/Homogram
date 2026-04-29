@@ -1,8 +1,8 @@
-import { Logger } from '@ohos/base';
+﻿import { Logger } from '@ohos/base';
 import { preferences } from '@kit.ArkData';
 import { common } from '@kit.AbilityKit';
 import { http } from '@kit.NetworkKit';
-import { registerPush as nativeRegisterPush, unregisterPush as nativeUnregisterPush } from 'libhomogrape.so';
+import { registerPush as nativeRegisterPush, unregisterPush as nativeUnregisterPush } from '../api';
 
 export const PUSH_NICKNAME_KEY = 'push_nickname';
 
@@ -232,3 +232,6 @@ export class PushService {
     }
   }
 }
+
+
+

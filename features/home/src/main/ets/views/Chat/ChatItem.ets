@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ import { BaseConstants, BreakpointConstants, Logger } from '@ohos/base';
 import { HomeConstants } from '../../constants/HomeConstants';
 import { DateHelper } from '@ohos/base';
 import { Chat } from '../../entities/Chat';
-import { ChatType } from 'libhomogrape.so'
+import { ChatType } from '../../api'
 import { HashMap } from '@kit.ArkTS';
 import { SeenChat } from '../../entities/SeenChat';
 import { getOrDownloadProfilePhoto, getThumbProfilePhotoPixelMap } from '../../utils';

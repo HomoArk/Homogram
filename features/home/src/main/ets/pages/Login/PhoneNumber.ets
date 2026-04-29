@@ -1,5 +1,5 @@
-import { Logger } from '@ohos/base'
-import { LoginState, login, signOut } from 'libhomogrape.so'
+﻿import { Logger } from '@ohos/base'
+import { LoginState, sessionService } from '../../api'
 import { emitter } from '@kit.BasicServicesKit';
 import { promptAction } from '@kit.ArkUI';
 import { EventConstants } from '../../constants/EventConstants';
@@ -55,7 +55,7 @@ export struct PhoneNumber {
             this.isLoading = true;
             promptAction.showToast({ message: $r('app.string.loading'), duration: 2000 });
             Logger.debug('Login/Phone number: ' + this.phone);
-            let result = await login(this.phone);
+            let result = await sessionService.login(this.phone);
             if (result == LoginState.LoggedIn) {
               // Index -> PhoneNumber
               if (this.pageInfo.size() != 1) {
@@ -65,7 +65,7 @@ export struct PhoneNumber {
                 this.isError = true;
                 this.isLoading = false;
                 promptAction.showToast({ message: $r('app.string.login_failed_retry'), duration: 2000 });
-                this.isSignOut = await signOut();
+                this.isSignOut = await sessionService.signOut();
                 this.errorMessage = 'Sign out: ' + this.isSignOut.toString();
                 return;
               }
@@ -99,3 +99,4 @@ export struct PhoneNumber {
     .hideTitleBar(true)
   }
 }
+

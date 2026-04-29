@@ -2,7 +2,6 @@ import { HashMap } from '@kit.ArkTS';
 import { Logger } from '@ohos/base';
 import { SortedHashMap } from '@ohos/base';
 import { Chat } from '../../entities/Chat';
-import { ArkTSUtils } from '@kit.ArkTS';
 
 export class ChatDataSource implements IDataSource {
   private pinnedChatsMap: HashMap<string, Chat> = new HashMap<string, Chat>();
@@ -11,7 +10,6 @@ export class ChatDataSource implements IDataSource {
   private sortedUnpinnedChatsMap: SortedHashMap<string, Chat> = new SortedHashMap<string, Chat>();
   // private readonly fetchInProgress: HashSet<number> = new HashSet<number>();
   private listeners: DataChangeListener[] = [];
-  private lock_: ArkTSUtils.locks.AsyncLock = new ArkTSUtils.locks.AsyncLock(); // TODO: should we use a lock here?
 
   constructor() {
   }
@@ -49,62 +47,42 @@ export class ChatDataSource implements IDataSource {
     return this.sortedUnpinnedChatsMap.sortedValuesIterator();
   }
 
-  add(chat: Chat): void {
-    Logger.debug('ChatDataSource add try to acquire lock');
-    this.lock_.lockAsync(() => {
-      Logger.debug('ChatDataSource add lock acquired');
-      this._add(chat);
-    }, ArkTSUtils.locks.AsyncLockMode.EXCLUSIVE);
+  getPinnedChatsArray(): Chat[] {
+    return [...this.pinnedChatsArray];
   }
 
-  _add(chat: Chat): void {
-    // We should check the following cases in sequence:
-    // 1. chat is already in pinned chats
-    //  For case 1, we should modify the chat, but keep the chat in the same position.
-    // 2. chat is already in unpinned chats
-    //  For case 2, we should modify the chat, and if the lastMessageTimestamp is changed,
-    //  we should move the chat to the correct position.
-    // 3. chat is not in either pinned or unpinned chats
-    //  For case 3, we should add the chat to the top of unpinned chats.
-    // TODO: For case 2 and 3, do we need to move other chats down, or notifyReload()? Would that be too expensive?
+  getSortedUnpinnedChatsArray(): Chat[] {
+    return this.sortedUnpinnedChatsMap.getSortedValues();
+  }
 
-    // case 1: chat is already in pinned chats
-    if (this.pinnedChatsMap.hasKey(chat.chatId.toString())) {
-      Logger.debug('ChatDataSource add chat is already in pinned chats, chat name: ' + chat.name);
-      this.modify(chat);
+  add(chat: Chat): void {
+    this.upsert(chat);
+  }
+
+  upsert(chat: Chat): void {
+    const key = chat.chatId.toString();
+    if (chat.pinned) {
+      this.upsertPinned(key, chat);
       return;
     }
 
-    // case 2: chat is already in unpinned chats
-    let old_index = this.sortedUnpinnedChatsMap.indexOf(chat.chatId.toString());
-    if (old_index >= 0) { // chat is already in unpinned chats
-      Logger.debug('ChatDataSource add chat is already in unpinned chats, chat name: ' + chat.name + ', index: ' + old_index);
-      let new_index = this.sortedUnpinnedChatsMap.set(chat.chatId.toString(), chat);
-      if (new_index !== old_index) {
-        Logger.debug('ChatDataSource add chat is already in unpinned chats, new_index !== old_index: ' + new_index + ' ' + old_index);
-        // this.notifyDataMove(old_index + this.pinnedChatsMap.length, new_index + this.pinnedChatsMap.length);
-        // this.notifyDataChange(new_index + this.pinnedChatsMap.length);
-        this.notifyDataReload();
-      } else {
-        Logger.debug('ChatDataSource add chat is already in unpinned chats, new_index === old_index: ' + old_index);
-        this.notifyDataChange(new_index + this.pinnedChatsMap.length);
+    if (this.pinnedChatsMap.hasKey(key)) {
+      const pinnedIndex = this.pinnedChatsArray.findIndex((value) => value.chatId.toString() === key);
+      this.pinnedChatsMap.remove(key);
+      if (pinnedIndex >= 0) {
+        this.pinnedChatsArray.splice(pinnedIndex, 1);
+        this.notifyDataDelete(pinnedIndex);
       }
-      return;
+    }
+
+    const update = this.sortedUnpinnedChatsMap.set(key, chat);
+    if (update.previousIndex >= 0 && update.previousIndex !== update.index) {
+      this.notifyDataMove(update.previousIndex + this.pinnedChatsArray.length, update.index + this.pinnedChatsArray.length);
+      this.notifyDataChange(update.index + this.pinnedChatsArray.length);
+    } else if (update.previousIndex >= 0) {
+      this.notifyDataChange(update.index + this.pinnedChatsArray.length);
     } else {
-      Logger.debug('ChatDataSource add new chat chat is not in any chats, old_index < 0, chat name:' + chat.name);
-      // case 3: chat is not in either pinned or unpinned chats
-      let new_index = -1;
-      if (chat.pinned) {
-        Logger.debug('ChatDataSource add new chat chat is not in any chats, chat is pinned, chat name:' + chat.name);
-        this.pinnedChatsArray.push(chat);
-        this.pinnedChatsMap.set(chat.chatId.toString(), chat);
-        new_index = this.pinnedChatsArray.length - 1;
-      } else {
-        Logger.debug('ChatDataSource add new chat chat is not in any chats, chat is not pinned, chat name:' + chat.name);
-        new_index = this.sortedUnpinnedChatsMap.set(chat.chatId.toString(), chat) + this.pinnedChatsMap.length;
-      }
-      this.notifyDataAdd(new_index); // TODO: test this
-      return;
+      this.notifyDataAdd(update.index + this.pinnedChatsArray.length);
     }
   }
 
@@ -120,18 +98,7 @@ export class ChatDataSource implements IDataSource {
   }
 
   async addChatsFromSingleArray(chats: Chat[]): Promise<void> {
-    let start = Date.now();
-    for (let i = 0; i < chats.length; i++) {
-      if (chats[i].pinned) {
-        this.pinnedChatsArray.push(chats[i]);
-        this.pinnedChatsMap.set(chats[i].chatId.toString(), chats[i]);
-      } else {
-        this.sortedUnpinnedChatsMap.set(chats[i].chatId.toString(), chats[i]);
-      }
-    }
-    this.notifyDataReload();
-    let end = Date.now();
-    Logger.debug('addChatsFromSingleArray elapsed: ' + (end - start) + ' ms');
+    this.replaceAll(chats);
   }
 
   addAllPinned(chats: Chat[]): void {
@@ -184,24 +151,23 @@ export class ChatDataSource implements IDataSource {
     this.notifyDataReload();
   }
 
-  modify(chat: Chat): void {
-    let index = -1;
-    if (chat.pinned) {
-      const oldChat = this.pinnedChatsMap.get(chat.chatId.toString());
-      if (oldChat) {
-        index = this.pinnedChatsArray.indexOf(oldChat);
-        this.pinnedChatsArray[index] = chat;
-        this.pinnedChatsMap.set(chat.chatId.toString(), chat);
-      } else {
+  replaceAll(chats: Chat[]): void {
+    this.pinnedChatsMap.clear();
+    this.pinnedChatsArray = [];
+    this.sortedUnpinnedChatsMap.clear();
+    for (const chat of chats) {
+      if (chat.pinned) {
         this.pinnedChatsArray.push(chat);
         this.pinnedChatsMap.set(chat.chatId.toString(), chat);
-        index = this.pinnedChatsArray.length - 1;
+      } else {
+        this.sortedUnpinnedChatsMap.set(chat.chatId.toString(), chat);
       }
-    } else {
-      index = this.sortedUnpinnedChatsMap.set(chat.chatId.toString(), chat) + this.pinnedChatsMap.length;
     }
-    Logger.debug('modify: ' + index);
-    this.notifyDataChange(index);
+    this.notifyDataReload();
+  }
+
+  modify(chat: Chat): void {
+    this.upsert(chat);
   }
 
   // I don't think this method will be used but just in case we need it
@@ -263,5 +229,28 @@ export class ChatDataSource implements IDataSource {
     this.listeners.forEach(listener => {
       listener.onDataMove(from, to);
     })
+  }
+
+  private upsertPinned(key: string, chat: Chat): void {
+    const oldPinned = this.pinnedChatsMap.get(key);
+    if (oldPinned) {
+      const index = this.pinnedChatsArray.indexOf(oldPinned);
+      if (index >= 0) {
+        this.pinnedChatsArray[index] = chat;
+        this.pinnedChatsMap.set(key, chat);
+        this.notifyDataChange(index);
+      }
+      return;
+    }
+
+    const unpinnedIndex = this.sortedUnpinnedChatsMap.indexOf(key);
+    if (unpinnedIndex >= 0) {
+      this.sortedUnpinnedChatsMap.delete(key);
+      this.notifyDataDelete(unpinnedIndex + this.pinnedChatsArray.length);
+    }
+
+    this.pinnedChatsArray.push(chat);
+    this.pinnedChatsMap.set(key, chat);
+    this.notifyDataAdd(this.pinnedChatsArray.length - 1);
   }
 }

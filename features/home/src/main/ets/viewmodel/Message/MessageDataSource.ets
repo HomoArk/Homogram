@@ -14,10 +14,8 @@ export class MessageDataSource implements IDataSourcePrefetching {
   private listeners: DataChangeListener[] = [];
 
   public setMessages(messages: Message[]): void {
-    console.warn(`[FMTENTITIES] MessageDataSource.setMessages: setting ${messages.length} messages`);
+    this.sortedMessages.clear();
     for (let i = 0; i < messages.length; i++) {
-      const msg = messages[i];
-      console.warn(`[FMTENTITIES] MessageDataSource.setMessages: message ${i} - messageId=${msg.messageId}, fmtEntities count=${msg.fmtEntities?.length ?? 0}, fmtEntitiesJson=${msg.fmtEntitiesJson?.substring(0, 100)}`);
       this.sortedMessages.set(messages[i].messageId, messages[i]);
     }
     this.notifyDataReload();
@@ -58,12 +56,24 @@ export class MessageDataSource implements IDataSourcePrefetching {
   }
 
   public push(data: Message): void {
-    this.notifyDataAdd(this.sortedMessages.set(data.messageId, data));
+    this.upsert(data);
   }
 
   public append(data: Message[]): void {
     for (let i = 0; i < data.length; i++) {
-      this.notifyDataAdd(this.sortedMessages.set(data[i].messageId, data[i]));
+      this.upsert(data[i]);
+    }
+  }
+
+  public upsert(data: Message): void {
+    const update = this.sortedMessages.set(data.messageId, data);
+    if (update.previousIndex >= 0 && update.previousIndex !== update.index) {
+      this.notifyDataMove(update.previousIndex, update.index);
+      this.notifyDataChange(update.index);
+    } else if (update.previousIndex >= 0) {
+      this.notifyDataChange(update.index);
+    } else {
+      this.notifyDataAdd(update.index);
     }
   }
 

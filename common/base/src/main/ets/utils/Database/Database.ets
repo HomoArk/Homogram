@@ -113,14 +113,17 @@ export class Database {
     let rdb = Database.getInstance();
     let result: Object[] = [];
     if (rdb) {
+      let resultSet: relationalStore.ResultSet | undefined = undefined;
       try {
-        let resultSet = rdb.querySqlSync(sql, args);
+        resultSet = rdb.querySqlSync(sql, args);
         while (resultSet.goToNextRow()) {
           let row = resultSet.getRow();
           result.push(row);
         }
       } catch (err) {
         Logger.error(`query ${sql} failed: ${err.message}`);
+      } finally {
+        resultSet?.close();
       }
     }
     return result;
@@ -179,22 +182,6 @@ export class Database {
       }
     }
     return result;
-  }
-
-  public static async delete() {
-    // TODO: implement this method
-  }
-
-  public static deleteSync() {
-    // TODO: implement this method
-  }
-
-  public static async update() {
-    // TODO: implement this method
-  }
-
-  public static updateSync() {
-    // TODO: implement this method
   }
 
   private static ToValuesBucket(cols: string[], vals: ValueType[]): ValuesBucket {

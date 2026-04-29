@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,9 @@ import {
   NativePackedChat,
   NativeRawMessage,
   NativeSeenChat
-} from 'libhomogrape.so';
+} from '../../api';
 import { DatabaseConstants } from '../../constants/DatabaseConstants';
-import { syncCachesFromLocalDb } from 'libhomogrape.so'
+import { syncCachesFromLocalDb } from '../../api'
 import { Chat } from '../../entities/Chat';
 import { Message } from '../../entities/Message';
 import { PackedChat } from '../../entities/PackedChat';
@@ -180,3 +180,5 @@ class ChatViewModel {
 }
 
 export { ChatViewModel };
+
+

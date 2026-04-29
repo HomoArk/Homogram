@@ -1,4 +1,4 @@
-import { BaseConstants, BreakpointConstants, DateHelper, Logger, NormalText } from '@ohos/base'
+﻿import { BaseConstants, BreakpointConstants, DateHelper, Logger, NormalText } from '@ohos/base'
 import {
   MediaType,
   downloadMediaFromMessage,
@@ -6,7 +6,7 @@ import {
   NativeSeenChat,
   // downloadProfilePhoto,
   ChatType,
-} from 'libhomogrape.so';
+} from '../../api';
 import { webview } from '@kit.ArkWeb';
 import { util } from '@kit.ArkTS';
 import { HomeConstants } from '../../constants/HomeConstants';
@@ -822,8 +822,13 @@ export struct MessageBubble {
 
       if (!fs.accessSync(this.mediaPath)) {
         try {
-          Logger.info(`[MEDIA] Downloading media: chatId=${this.message?.chatId}, messageId=${this.message?.messageId}`);
-          const path = await downloadMediaFromMessage(this.message?.chatId, this.message?.messageId);
+          const chatId = this.message?.chatId;
+          const messageId = this.message?.messageId;
+          if (chatId === undefined || messageId === undefined) {
+            throw new Error('MessageBubble media download requires chatId and messageId');
+          }
+          Logger.info(`[MEDIA] Downloading media: chatId=${chatId}, messageId=${messageId}`);
+          const path = await downloadMediaFromMessage(chatId, messageId);
           this.mediaPath = path;
           // 验证文件是否存在
           if (fs.accessSync(path)) {

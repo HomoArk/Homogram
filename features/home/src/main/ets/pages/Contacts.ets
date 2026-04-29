@@ -1,5 +1,5 @@
-import { BaseConstants } from '@ohos/base';
-import { NativeSeenChat } from 'libhomogrape.so';
+﻿import { BaseConstants } from '@ohos/base';
+import { NativeSeenChat } from '../api';
 
 @ComponentV2
 export struct Contacts {
@@ -17,3 +17,6 @@ export struct Contacts {
     }
   }
 }
+
+
+

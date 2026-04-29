@@ -1,5 +1,5 @@
-import { NativeSeenChat } from "libhomogrape.so";
-import { getMe } from "libhomogrape.so"
+﻿import { NativeSeenChat } from "../api";
+import { getMe } from "../api"
 import { ProfilePage } from "./ProfilePage";
 import { deviceInfo } from '@kit.BasicServicesKit';
 
@@ -23,3 +23,5 @@ export struct Me {
     })
   }
 }
+
+

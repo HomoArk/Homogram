@@ -1,5 +1,5 @@
-import { Logger } from '@ohos/base'
-import { LoginState, verifyCode, signOut } from 'libhomogrape.so'
+﻿import { Logger } from '@ohos/base'
+import { LoginState, sessionService } from '../../api'
 import { emitter } from '@kit.BasicServicesKit';
 import { promptAction } from '@kit.ArkUI';
 import { EventConstants } from '../../constants/EventConstants';
@@ -55,10 +55,10 @@ export struct VerifyCode {
               try {
                 promptAction.showToast({ message: $r('app.string.loading'), duration: 2000 });
               } catch (error) {
-                console.warn(error);
+                console.warn(String(error));
               }
             Logger.debug('Login/VerifyCode submit code: ' + this.code);
-            let result = await verifyCode(this.code);
+            let result = await sessionService.verifyCode(this.code);
             if (result == LoginState.LoggedIn) {
               // Index -> PhoneNumber -> VerifyCode
               if (this.pageInfo.size() != 2) {
@@ -70,9 +70,9 @@ export struct VerifyCode {
                 try {
                   promptAction.showToast({ message: $r('app.string.login_failed_retry'), duration: 2000 });
                 } catch (error) {
-                  console.warn(error);
+                  console.warn(String(error));
                 }
-                this.isSignOut = await signOut();
+                this.isSignOut = await sessionService.signOut();
                 this.errorMessage = 'Sign out: ' + this.isSignOut.toString();
                 return
               }
@@ -107,3 +107,4 @@ export struct VerifyCode {
     .hideTitleBar(true)
   }
 }
+

@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 import { BaseConstants } from '@ohos/base/src/main/ets/constants/BaseConstants';
 import { StandardIcon } from '@ohos/base/src/main/ets/views/image/StandardIcon';
 import { HomeConstants } from '../../constants/HomeConstants';
-import { NativeMessage, sendMessage } from 'libhomogrape.so'
+import { NativeMessage, sendMessage } from '../../api'
 import { Logger } from '@ohos/base';
 import { Chat } from '../../entities/Chat';
 import { Message } from '../../entities/Message';

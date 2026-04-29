@@ -1,5 +1,5 @@
-import sql from "@liushengyi/smartdb"
-import { NativePackedChat } from 'libhomogrape.so'
+﻿import sql from "@liushengyi/smartdb"
+import { NativePackedChat } from '../api'
 
 export class PackedChat implements NativePackedChat {
   @sql.SqlColumn(sql.ColumnType.INTEGER)

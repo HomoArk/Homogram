@@ -6,20 +6,28 @@ export interface IComparable<T> {
 
 export class SortedHashMap<K, V extends IComparable<V>> {
   private map: HashMap<K, V>;
+  private sortedKeys: K[];
   private sortedValues: V[];
+  private indexByKey: Map<K, number>;
 
   constructor() {
     this.map = new HashMap<K, V>();
+    this.sortedKeys = [];
     this.sortedValues = [];
+    this.indexByKey = new Map<K, number>();
   }
 
-  set(key: K, value: V): number {
+  set(key: K, value: V): { index: number; previousIndex: number } {
+    let previousIndex = -1;
     if (this.map.hasKey(key)) {
-      const oldValue = this.map.get(key);
-      this.removeSortedValue(oldValue);
+      previousIndex = this.removeByKey(key);
     }
     this.map.set(key, value);
-    return this.insertSortedValue(value);
+    const inserted = this.insertSortedValue(key, value);
+    return {
+      index: inserted.index,
+      previousIndex,
+    };
   }
 
   setAll(map: HashMap<K, V>): void {
@@ -36,8 +44,7 @@ export class SortedHashMap<K, V extends IComparable<V>> {
 
   delete(key: K): number {
     if (this.map.hasKey(key)) {
-      const value = this.map.get(key);
-      const index = this.removeSortedValue(value);
+      const index = this.removeByKey(key);
       this.map.remove(key);
       return index;
     }
@@ -46,7 +53,9 @@ export class SortedHashMap<K, V extends IComparable<V>> {
 
   clear(): void {
     this.map.clear();
+    this.sortedKeys = [];
     this.sortedValues = [];
+    this.indexByKey.clear();
   }
 
   getSortedValues(): V[] {
@@ -58,12 +67,7 @@ export class SortedHashMap<K, V extends IComparable<V>> {
   }
 
   indexOf(key: K): number {
-    // TODO: this is not efficient, we should have a map from value to index
-    if (!this.map.hasKey(key)) {
-      return -1;
-    }
-    const value = this.map.get(key);
-    return this.sortedValues.indexOf(value);
+    return this.indexByKey.get(key) ?? -1;
   }
 
   getValueAt(index: number): V | undefined {
@@ -87,6 +91,10 @@ export class SortedHashMap<K, V extends IComparable<V>> {
     return this.sortedValues.values();
   }
 
+  keysArray(): K[] {
+    return [...this.sortedKeys];
+  }
+
   private binarySearchInsertIndex(value: V): number {
     let low = 0;
     let high = this.sortedValues.length - 1;
@@ -103,17 +111,29 @@ export class SortedHashMap<K, V extends IComparable<V>> {
     return low;
   }
 
-  private insertSortedValue(value: V): number {
+  private insertSortedValue(key: K, value: V): { index: number; previousIndex: number } {
     const index = this.binarySearchInsertIndex(value);
+    this.sortedKeys.splice(index, 0, key);
     this.sortedValues.splice(index, 0, value);
+    this.rebuildIndexes(index);
+    return { index, previousIndex: -1 };
+  }
+
+  private removeByKey(key: K): number {
+    const index = this.indexByKey.get(key) ?? -1;
+    if (index < 0) {
+      return -1;
+    }
+    this.sortedKeys.splice(index, 1);
+    this.sortedValues.splice(index, 1);
+    this.indexByKey.delete(key);
+    this.rebuildIndexes(index);
     return index;
   }
 
-  private removeSortedValue(value: V): number {
-    const index = this.sortedValues.indexOf(value);
-    if (index !== -1) {
-      this.sortedValues.splice(index, 1);
+  private rebuildIndexes(startIndex: number = 0): void {
+    for (let i = startIndex; i < this.sortedKeys.length; i++) {
+      this.indexByKey.set(this.sortedKeys[i], i);
     }
-    return index;
   }
 }

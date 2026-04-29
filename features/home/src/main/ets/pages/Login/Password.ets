@@ -1,5 +1,5 @@
-import { Logger } from '@ohos/base'
-import { LoginState, password, signOut } from 'libhomogrape.so'
+﻿import { Logger } from '@ohos/base'
+import { LoginState, sessionService } from '../../api'
 import { emitter } from '@kit.BasicServicesKit';
 import { promptAction } from '@kit.ArkUI';
 import { EventConstants } from '../../constants/EventConstants';
@@ -50,7 +50,7 @@ export struct Password {
             this.isLoading = true;
             promptAction.showToast({ message: $r('app.string.loading'), duration: 2000 });
             Logger.debug('Login/Password: ' + this.password);
-            let result = await password(this.password);
+            let result = await sessionService.password(this.password);
             if (result == LoginState.LoggedIn) {
               // Index -> PhoneNumber -> VerifyCode -> Password
               if (this.pageInfo.size() != 3) {
@@ -60,7 +60,7 @@ export struct Password {
                 this.isError = true;
                 this.isLoading = false;
                 promptAction.showToast({ message: $r('app.string.login_failed_retry'), duration: 2000 });
-                this.isSignOut = await signOut();
+                this.isSignOut = await sessionService.signOut();
                 this.errorMessage = 'Sign out: ' + this.isSignOut.toString();
                 return; // TODO: should we clear pageInfo here?
               }
@@ -91,3 +91,4 @@ export struct Password {
     .hideTitleBar(true)
   }
 }
+

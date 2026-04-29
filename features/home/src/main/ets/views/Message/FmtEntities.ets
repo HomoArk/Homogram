@@ -1,22 +1,22 @@
-import {
+﻿import {
   MessageEntityType
-} from 'libhomogrape.so';
+} from '../../api';
 import { BusinessError, pasteboard } from '@kit.BasicServicesKit';
 import { promptAction, LengthMetrics } from '@kit.ArkUI';
 import { Logger } from '@ohos/base';
 import { MessageEntity } from '../../entities/Message';
 
 /**
- * 根据实体类型应用对应的样式
- * @param text 原始文本内容
-  * @param styledString |inout| 可变样式字符串
+ * 鏍规嵁瀹炰綋绫诲瀷搴旂敤瀵瑰簲鐨勬牱寮?
+ * @param text 鍘熷鏂囨湰鍐呭
+  * @param styledString |inout| 鍙彉鏍峰紡瀛楃涓?
  * @throws BusinessError
  */
 export function applyEntityStyle(text: string, styledString: MutableStyledString, entity: MessageEntity): void {
   const start = entity.offset;
   const length = entity.length;
 
-  // 确保范围有效
+  // 纭繚鑼冨洿鏈夋晥
   if (start < 0 || start >= text.length || length <= 0) {
     return;
   }
@@ -79,7 +79,7 @@ export function applyEntityStyle(text: string, styledString: MutableStyledString
         styledKey: StyledStringKey.GESTURE,
         styledValue: new GestureStyle({
           onLongPress: () => {
-            // 复制代码片段到剪贴板
+            // 澶嶅埗浠ｇ爜鐗囨鍒板壀璐存澘
             const codeText = text.substring(start, start + actualLength);
             const pasteData = pasteboard.createData(pasteboard.MIMETYPE_TEXT_PLAIN, codeText);
             const systemPasteboard = pasteboard.getSystemPasteboard();
@@ -112,8 +112,8 @@ export function applyEntityStyle(text: string, styledString: MutableStyledString
       break;
 
     case MessageEntityType.TextUrl:
-      // 超链接样式：蓝色 + 下划线
-      // 优先使用 entity.url，否则尝试从文本片段识别 URL
+      // 瓒呴摼鎺ユ牱寮忥細钃濊壊 + 涓嬪垝绾?
+      // 浼樺厛浣跨敤 entity.url锛屽惁鍒欏皾璇曚粠鏂囨湰鐗囨璇嗗埆 URL
       const textUrlRawText = text.substring(start, start + actualLength);
       const textUrlLink = entity.url ?? (isLikelyUrl(textUrlRawText.trim()) ? normalizeUrl(textUrlRawText.trim()) : undefined);
 
@@ -141,7 +141,7 @@ export function applyEntityStyle(text: string, styledString: MutableStyledString
 
     case MessageEntityType.Url:
     case MessageEntityType.Email:
-      // URL 和邮箱样式：蓝色
+      // URL 鍜岄偖绠辨牱寮忥細钃濊壊
       styledString.setStyle({
         start: start,
         length: actualLength,
@@ -152,7 +152,7 @@ export function applyEntityStyle(text: string, styledString: MutableStyledString
 
     case MessageEntityType.Mention:
     case MessageEntityType.MentionName:
-      // @ 提及样式：蓝色
+      // @ 鎻愬強鏍峰紡锛氳摑鑹?
       styledString.setStyle({
         start: start,
         length: actualLength,
@@ -163,7 +163,7 @@ export function applyEntityStyle(text: string, styledString: MutableStyledString
 
     case MessageEntityType.Hashtag:
     case MessageEntityType.Cashtag:
-      // 标签样式：蓝色
+      // 鏍囩鏍峰紡锛氳摑鑹?
       styledString.setStyle({
         start: start,
         length: actualLength,
@@ -173,7 +173,7 @@ export function applyEntityStyle(text: string, styledString: MutableStyledString
       break;
 
     case MessageEntityType.BotCommand:
-      // Bot 命令样式：蓝色
+      // Bot 鍛戒护鏍峰紡锛氳摑鑹?
       styledString.setStyle({
         start: start,
         length: actualLength,
@@ -183,7 +183,7 @@ export function applyEntityStyle(text: string, styledString: MutableStyledString
       break;
 
     case MessageEntityType.Spoiler:
-      // 剧透样式：灰色背景（模糊效果需要特殊处理）
+      // 鍓ч€忔牱寮忥細鐏拌壊鑳屾櫙锛堟ā绯婃晥鏋滈渶瑕佺壒娈婂鐞嗭級
       styledString.setStyle({
         start: start,
         length: actualLength,
@@ -199,7 +199,7 @@ export function applyEntityStyle(text: string, styledString: MutableStyledString
       break;
 
     case MessageEntityType.Blockquote:
-      // 引用块样式：灰色背景 + 左边距
+      // 寮曠敤鍧楁牱寮忥細鐏拌壊鑳屾櫙 + 宸﹁竟璺?
       styledString.setStyle({
         start: start,
         length: actualLength,
@@ -215,7 +215,7 @@ export function applyEntityStyle(text: string, styledString: MutableStyledString
       break;
 
     case MessageEntityType.Phone:
-      // 电话号码样式
+      // 鐢佃瘽鍙风爜鏍峰紡
       styledString.setStyle({
         start: start,
         length: actualLength,
@@ -225,31 +225,31 @@ export function applyEntityStyle(text: string, styledString: MutableStyledString
       break;
 
     case MessageEntityType.CustomEmoji:
-      // 自定义表情：暂不处理，需要加载表情图片
+      // 鑷畾涔夎〃鎯咃細鏆備笉澶勭悊锛岄渶瑕佸姞杞借〃鎯呭浘鐗?
       break;
 
     default:
-      // 未知类型，不处理
+      // 鏈煡绫诲瀷锛屼笉澶勭悊
       break;
   }
 }
 
 /**
- * 粗略判断文本是否可能为 URL
+ * 绮楃暐鍒ゆ柇鏂囨湰鏄惁鍙兘涓?URL
  */
 function isLikelyUrl(text: string): boolean {
   if (!text) return false;
-  // 常见前缀或域名结构的简单判断
+  // 甯歌鍓嶇紑鎴栧煙鍚嶇粨鏋勭殑绠€鍗曞垽鏂?
   const lower = text.toLowerCase();
   if (lower.startsWith('http://') || lower.startsWith('https://')) return true;
   if (lower.startsWith('www.')) return true;
-  // 简单的域名匹配，如 example.com 或 sub.domain.io/path
+  // 绠€鍗曠殑鍩熷悕鍖归厤锛屽 example.com 鎴?sub.domain.io/path
   const domainLike = /^(?:[a-z0-9-]+\.)+[a-z]{2,}(?:[/:?#].*)?$/i;
   return domainLike.test(text);
 }
 
 /**
- * 规范化 URL：补全协议等
+ * 瑙勮寖鍖?URL锛氳ˉ鍏ㄥ崗璁瓑
  */
 function normalizeUrl(url: string): string {
   const trimmed = (url || '').trim();
@@ -258,6 +258,9 @@ function normalizeUrl(url: string): string {
   if (lower.startsWith('http://') || lower.startsWith('https://')) {
     return trimmed;
   }
-  // 为像 `www.example.com` 或裸域名补全默认协议
+  // 涓哄儚 `www.example.com` 鎴栬８鍩熷悕琛ュ叏榛樿鍗忚
   return `https://${trimmed}`;
 }
+
+
+

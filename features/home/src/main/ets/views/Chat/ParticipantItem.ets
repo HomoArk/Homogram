@@ -1,6 +1,6 @@
-import { BaseConstants, BreakpointConstants, Logger } from '@ohos/base';
+﻿import { BaseConstants, BreakpointConstants, Logger } from '@ohos/base';
 import { HomeConstants } from '../../constants/HomeConstants';
-import { NativeParticipant, NativeParticipantRole } from 'libhomogrape.so';
+import { NativeParticipant, NativeParticipantRole } from '../../api';
 import { image } from '@kit.ImageKit';
 
 @Component
@@ -12,7 +12,7 @@ export struct ParticipantItem {
 
   build() {
     Flex({ alignItems: ItemAlign.Center }) {
-      // 头像
+      // 澶村儚
       if (this.isPixelMapReady && this.profilePhotoPixelMap) {
         Image(this.profilePhotoPixelMap)
           .height(HomeConstants.PROFILE_PHOTO_SIZE)
@@ -20,7 +20,7 @@ export struct ParticipantItem {
           .borderRadius(HomeConstants.PROFILE_PHOTO_SIZE / 2)
           .margin({ left: $r('app.float.icon_margin_one'), right: $r('app.float.icon_margin_one') })
       } else {
-        // 默认头像，显示首字母
+        // 榛樿澶村儚锛屾樉绀洪瀛楁瘝
         Column() {
           Text(this.getInitials())
             .fontSize(BaseConstants.FONT_SIZE_SIXTEEN)
@@ -45,7 +45,7 @@ export struct ParticipantItem {
             .lineHeight($r('app.float.text_line_height_two'))
             .fontFamily(BaseConstants.FONT_FAMILY_MEDIUM)
           
-          // 显示角色标签
+          // 鏄剧ず瑙掕壊鏍囩
           if (this.participant?.role === NativeParticipantRole.Creator) {
             Text($r('app.string.role_creator'))
               .fontSize(BaseConstants.FONT_SIZE_TEN)
@@ -101,7 +101,7 @@ export struct ParticipantItem {
   }
 
   private getAvatarColor(): Color {
-    // 根据用户 ID 生成一个固定的颜色
+    // 鏍规嵁鐢ㄦ埛 ID 鐢熸垚涓€涓浐瀹氱殑棰滆壊
     const userId = this.participant?.userId || 0;
     const colors: Color[] = [
       0xFF5722 as Color, // Deep Orange
@@ -117,7 +117,7 @@ export struct ParticipantItem {
   }
 
   async aboutToAppear(): Promise<void> {
-    // 尝试从 photoThumb 创建 PixelMap
+    // 灏濊瘯浠?photoThumb 鍒涘缓 PixelMap
     if (this.participant?.photoThumb && this.participant.photoThumb.length > 0) {
       try {
         const buffer = new ArrayBuffer(this.participant.photoThumb.length);
@@ -134,3 +134,6 @@ export struct ParticipantItem {
     }
   }
 }
+
+
+

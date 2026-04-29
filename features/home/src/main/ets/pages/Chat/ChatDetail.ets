@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import { SeenChat } from '../../entities/SeenChat';
 import { HashMap } from '@kit.ArkTS';
 import { ChatDataSource } from '../../viewmodel/Chat/ChatDataSource';
 import { MessageDataSource } from '../../viewmodel/Message/MessageDataSource';
-import { ChatType, loadHistoryMessages, forwardMessages, NativeMessage, NativeSeenChat } from 'libhomogrape.so';
+import { ChatType, loadHistoryMessages, forwardMessages, NativeMessage, NativeSeenChat } from '../../api';
 import { curves, LengthMetrics, LengthUnit, promptAction } from '@kit.ArkUI';
 
 @AnimatableExtend(NavDestination)
@@ -173,7 +173,7 @@ export struct ChatDetail {
         .onClick(async () => {
           if (!this.me?.chatId) {
             this.getUIContext().getPromptAction().showToast({
-              message: "用户未登录",
+              message: 'User is not logged in.',
               duration: 2000,
               showMode: promptAction.ToastShowMode.DEFAULT,
               bottom: 100
@@ -445,3 +445,5 @@ export struct ChatDetail {
     }
   }
 }
+
+

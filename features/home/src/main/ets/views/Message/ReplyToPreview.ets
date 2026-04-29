@@ -1,6 +1,6 @@
-import { HashMap } from '@kit.ArkTS';
+﻿import { HashMap } from '@kit.ArkTS';
 import { BaseConstants, Logger } from '@ohos/base';
-import { downloadMediaFromMessage, MediaType, loadHistoryMessages, NativeMessage } from 'libhomogrape.so';
+import { downloadMediaFromMessage, MediaType, loadHistoryMessages, NativeMessage } from '../../api';
 import { MessageDataSource } from '../../viewmodel/Message/MessageDataSource';
 import { fileIo as fs, ReadOptions } from '@kit.CoreFileKit';
 import { HomeConstants } from '../../constants/HomeConstants';
@@ -43,9 +43,15 @@ export struct ReplyToPreview {
             this.mediaPath =
               BaseConstants.BASE_DIR + this.message?.chatId.toString() + "/" + this.message?.messageId.toString() +
                 ".jpg";
+            const chatId = this.message?.chatId;
+            const messageId = this.message?.messageId;
+            if (chatId === undefined || messageId === undefined) {
+              this.loadFailed = true;
+              return;
+            }
             if (!fs.accessSync(this.mediaPath)) {
               Logger.debug("ReplyToPreview ImagePreview onAppear: media not exists, downloading media");
-              downloadMediaFromMessage(this.message?.chatId, this.message?.messageId)
+              downloadMediaFromMessage(chatId, messageId)
                 .then((path) => {
                   Logger.debug("ReplyToPreview ImagePreview onAppear: media downloaded: " + path);
                   this.mediaPath = path;
@@ -94,10 +100,10 @@ export struct ReplyToPreview {
   }
 
   /**
-   * 检查消息是否存在，如果不存在则加载历史消息
+   * 妫€鏌ユ秷鎭槸鍚﹀瓨鍦紝濡傛灉涓嶅瓨鍦ㄥ垯鍔犺浇鍘嗗彶娑堟伅
    */
   private async checkAndLoadMessage(): Promise<void> {
-    // 重新获取消息，因为可能在组件创建后数据已更新
+    // 閲嶆柊鑾峰彇娑堟伅锛屽洜涓哄彲鑳藉湪缁勪欢鍒涘缓鍚庢暟鎹凡鏇存柊
     this.message = this.messagesOfChatMap.get(this.currentChatId)?.getMessageById(this.replyToMessageId);
     
     if (this.message) {
@@ -117,24 +123,24 @@ export struct ReplyToPreview {
     try {
       const chatId = parseInt(this.currentChatId);
       
-      // 加载包含被回复消息的历史记录
-      // 从 replyToMessageId 往前加载 50 条消息
+      // 鍔犺浇鍖呭惈琚洖澶嶆秷鎭殑鍘嗗彶璁板綍
+      // 浠?replyToMessageId 寰€鍓嶅姞杞?50 鏉℃秷鎭?
       const historyMessages: NativeMessage[] = await loadHistoryMessages(
         chatId,
-        this.replyToMessageId + 50, // 从被回复消息之后的位置开始加载
+        this.replyToMessageId + 50, // 浠庤鍥炲娑堟伅涔嬪悗鐨勪綅缃紑濮嬪姞杞?
         50
       );
 
       if (historyMessages.length > 0) {
         Logger.debug(`ReplyToPreview: loaded ${historyMessages.length} history messages`);
         
-        // 将消息添加到数据源
+        // 灏嗘秷鎭坊鍔犲埌鏁版嵁婧?
         const messageDataSource = this.messagesOfChatMap.get(this.currentChatId);
         if (messageDataSource) {
           const messages = historyMessages.map(nativeMsg => Message.fromNative(nativeMsg));
           messageDataSource.append(messages);
           
-          // 重新获取被回复的消息
+          // 閲嶆柊鑾峰彇琚洖澶嶇殑娑堟伅
           this.message = messageDataSource.getMessageById(this.replyToMessageId);
           
           if (this.message) {
@@ -156,3 +162,6 @@ export struct ReplyToPreview {
     }
   }
 }
+
+
+

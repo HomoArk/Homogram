@@ -32,7 +32,7 @@ class SeenChatDao {
     return sql.PromiseNull();
   }
 
-  @sql.SqlInsert("REPLACE INTO seen_chats (chatId, chatType, packedChat, isContact, isMutualContact, phone, username, usernames, " +
+  @sql.SqlInsert("REPLACE INTO seen_chats (chatId, chatType, packedChat, isContact, isMutualContact, phone, username, " +
     "photoThumb, fullName, firstName, lastName, bio, dateOfBirth, forum) " +
     "VALUES (#{chatId}, #{chatType}, #{packedChat}, #{isContact}, #{isMutualContact}, #{phone}, #{username}, #{photoThumb}, #{fullName}, " +
     "#{firstName}, #{lastName}, #{bio}, #{dateOfBirth}, #{forum})")

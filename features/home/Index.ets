@@ -1,16 +1,49 @@
 export { Index as Home } from "./src/main/ets/pages/Index";
 
-export { isLoggedIn,
-  login,
-  verifyCode,
-  password,
-  run,
-  stop,
+export {
+  telegramBridge,
+  ChatType,
+  IncomingMessageCallback,
   LoginState,
-  registerDevice,
+  MediaType,
+  MessageEntityType,
+  NativeChat,
+  NativeMessage,
+  NativeMessageEntity,
+  NativePackedChat,
+  NativeParticipant,
+  NativeParticipantRole,
+  NativeRawMessage,
+  NativeSeenChat,
+  UpdateChatCallback,
+  downloadMediaFromMessage,
+  downloadProfilePhoto,
+  forwardMessages,
+  getChatPhotoThumb,
+  getMe,
+  getParticipants,
+  getProfilePhotoPathAndCount,
+  isLoggedIn,
+  loadChatsWithOffset,
+  loadHistoryMessages,
+  login,
+  password,
   reconnect,
-  getProfilePhotoPathAndCount
-} from 'libhomogrape.so';
+  registerDevice,
+  registerPush,
+  run,
+  sendMessage,
+  signOut,
+  stop,
+  syncCachesFromLocalDb,
+  unregisterPush,
+  verifyCode,
+} from "./src/main/ets/bridge/TelegramBridge";
+
+export { appLifecycleService } from "./src/main/ets/services/AppLifecycleService";
+export { sessionService } from "./src/main/ets/services/SessionService";
+export { telegramSyncService } from "./src/main/ets/services/TelegramSyncService";
+export { telegramCacheRepository } from "./src/main/ets/repositories/TelegramCacheRepository";
 
 export { chatDao } from "./src/main/ets/dao/ChatDao";
 

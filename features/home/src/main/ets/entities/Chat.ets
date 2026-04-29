@@ -1,5 +1,5 @@
-import sql from "@liushengyi/smartdb"
-import { NativeChat, ChatType } from 'libhomogrape.so';
+﻿import sql from "@liushengyi/smartdb"
+import { NativeChat, ChatType } from '../api';
 import { IComparable } from '@ohos/base'
 
 export class Chat implements NativeChat, IComparable<Chat> {
@@ -65,3 +65,5 @@ export class Chat implements NativeChat, IComparable<Chat> {
     return this.lastMessageTimestamp - other.lastMessageTimestamp;
   }
 }
+
+

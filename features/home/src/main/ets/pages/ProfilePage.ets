@@ -1,4 +1,4 @@
-import { NativeSeenChat } from "libhomogrape.so";
+﻿import { NativeSeenChat } from "../api";
 import { Profile } from "../views/Profile"
 import { ComposeListItem, IconType } from "@kit.ArkUI";
 import { PushSettings } from './PushSettings';
@@ -20,18 +20,18 @@ export struct ProfilePage {
       Scroll() {
         Column() {
           if (this.user) {
-            // 显示用户资料
+            // 鏄剧ず鐢ㄦ埛璧勬枡
             Profile({
               avatar: this.user.photoThumb ? this.getAvatarFromBytes(this.user.photoThumb) : "",
               name: this.user.fullName,
               bio: this.user.bio ?? "",
             })
 
-            // 详细信息列表
+            // 璇︾粏淇℃伅鍒楄〃
             this.showList(this.user)
             Row().height(48)
           } else {
-            // 加载中 - 显示 skeleton
+            // 鍔犺浇涓?- 鏄剧ず skeleton
             Column({ space: 16 }) {
               LoadingProgress()
                 .size({
@@ -78,7 +78,7 @@ export struct ProfilePage {
   @Builder
   showList(user: NativeSeenChat) {
     List() {
-      // 用户名
+      // 鐢ㄦ埛鍚?
       if (user.username) {
         ListItem() {
           ComposeListItem({
@@ -92,7 +92,7 @@ export struct ProfilePage {
         }
       }
 
-      // 电话号码
+      // 鐢佃瘽鍙风爜
       if (user.phone) {
         ListItem() {
           ComposeListItem({
@@ -106,7 +106,7 @@ export struct ProfilePage {
         }
       }
 
-      // 名字
+      // 鍚嶅瓧
       ListItem() {
         ComposeListItem({
           contentItem: {
@@ -118,7 +118,7 @@ export struct ProfilePage {
         })
       }
 
-      // 姓氏
+      // 濮撴皬
       if (user.lastName) {
         ListItem() {
           ComposeListItem({
@@ -132,7 +132,7 @@ export struct ProfilePage {
         }
       }
 
-      // 生日
+      // 鐢熸棩
       if (user.dateOfBirth) {
         ListItem() {
           ComposeListItem({
@@ -146,7 +146,7 @@ export struct ProfilePage {
         }
       }
 
-      // 联系人状态
+      // 鑱旂郴浜虹姸鎬?
       ListItem() {
         ComposeListItem({
           contentItem: {
@@ -158,7 +158,7 @@ export struct ProfilePage {
         })
       }
 
-      // 互相联系人
+      // 浜掔浉鑱旂郴浜?
       if (user.isContact) {
         ListItem() {
           ComposeListItem({
@@ -172,7 +172,7 @@ export struct ProfilePage {
         }
       }
 
-      // 论坛标识
+      // 璁哄潧鏍囪瘑
       if (user.forum) {
         ListItem() {
           ComposeListItem({
@@ -184,7 +184,7 @@ export struct ProfilePage {
         }
       }
 
-      // Chat ID (调试用)
+      // Chat ID (璋冭瘯鐢?
       ListItem() {
         ComposeListItem({
           contentItem: {
@@ -196,7 +196,7 @@ export struct ProfilePage {
         })
       }
 
-      // Chat 类型
+      // Chat 绫诲瀷
       ListItem() {
         ComposeListItem({
           contentItem: {
@@ -220,7 +220,7 @@ export struct ProfilePage {
           })
         }
 
-        // 推送设置入口
+        // 鎺ㄩ€佽缃叆鍙?
         ListItem() {
           Button({ type: ButtonType.Normal }) {
             Row() {
@@ -267,8 +267,8 @@ export struct ProfilePage {
   }
 
   private getAvatarFromBytes(bytes: ArrayBuffer | number[]): string {
-    // TODO: 将字节数组转换为 base64 或图片 URI
-    // 这取决于你的图片处理方式
+    // TODO: 灏嗗瓧鑺傛暟缁勮浆鎹负 base64 鎴栧浘鐗?URI
+    // 杩欏彇鍐充簬浣犵殑鍥剧墖澶勭悊鏂瑰紡
     return "";
   }
 
@@ -280,7 +280,7 @@ export struct ProfilePage {
   }
 
   private getChatTypeString(chatType: number): ResourceStr {
-    // 根据 ChatType 枚举值调整
+    // 鏍规嵁 ChatType 鏋氫妇鍊艰皟鏁?
     switch (chatType) {
       case 0:
         return $r('app.string.profile_chat_type_user');
@@ -293,3 +293,5 @@ export struct ProfilePage {
     }
   }
 }
+
+

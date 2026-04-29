@@ -1,8 +1,8 @@
-import { image } from '@kit.ImageKit';
+﻿import { image } from '@kit.ImageKit';
 import { Base64 } from '@ohos/base64';
 import { Logger } from '@ohos/base';
-import { getProfilePhotoPathAndCount } from 'libhomogrape.so';
-import { downloadProfilePhoto } from 'libhomogrape.so';
+import { getProfilePhotoPathAndCount } from './api';
+import { downloadProfilePhoto } from './api';
 import { common } from '@kit.AbilityKit';
 import { PushService } from './utils/push';
 
@@ -95,3 +95,6 @@ export async function autoRegisterPushIfNeeded(context: common.UIAbilityContext)
   const pushService = new PushService(context);
   await pushService.autoRegisterIfNeeded();
 }
+
+
+

@@ -1,8 +1,8 @@
-import { BaseConstants, BreakpointConstants, Logger } from '@ohos/base';
+﻿import { BaseConstants, BreakpointConstants, Logger } from '@ohos/base';
 import { HomeConstants } from '../../../constants/HomeConstants';
 import { ParticipantItem } from '../../../views/Chat/ParticipantItem';
 import { ChatDataSource } from '../../../viewmodel/Chat/ChatDataSource';
-import { getParticipants, NativeParticipant, ChatType } from 'libhomogrape.so';
+import { getParticipants, NativeParticipant, ChatType } from '../../../api';
 import { deviceInfo } from '@kit.BasicServicesKit';
 import { curves } from '@kit.ArkUI';
 
@@ -127,3 +127,6 @@ export struct ParticipantList {
     }
   }
 }
+
+
+

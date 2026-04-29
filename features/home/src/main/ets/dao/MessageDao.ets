@@ -111,6 +111,17 @@ class MessageDao {
     }
     return messages;
   }
+
+  @sql.SqlQuery("SELECT * FROM messages WHERE chatId = #{chatId} ORDER BY messageId DESC LIMIT #{limit}")
+  @sql.ReturnType([Message])
+  async getRecentMessagesByChatId(@sql.Param("chatId") chatId: number, @sql.Param("limit") limit: number): Promise<Array<Message>> {
+    const messages: Array<Message> = await sql.PromiseNull();
+    for (const msg of messages) {
+      msg.deserializeFmtEntities();
+    }
+    messages.reverse();
+    return messages;
+  }
 }
 
 export const messageDao = new MessageDao();

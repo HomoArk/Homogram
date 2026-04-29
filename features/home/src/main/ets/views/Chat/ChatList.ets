@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,14 +18,11 @@ import { ChatItem } from './ChatItem';
 import { HomeTopSearch } from '../common/HomeTopSearch';
 import { HomeConstants } from '../../constants/HomeConstants';
 import { deviceInfo } from '@kit.BasicServicesKit';
-import { loadCachedChats, UpdateChatCallback } from '../../viewmodel/Chat/ChatViewModel';
-import { hilog } from '@kit.PerformanceAnalysisKit';
-import { ChatType, loadChatsWithOffset } from 'libhomogrape.so';
+import { ChatType, loadChatsWithOffset } from '../../api';
 import { Chat } from '../../entities/Chat';
-import { HashMap } from '@kit.ArkTS';
 import { ChatDataSource } from '../../viewmodel/Chat/ChatDataSource';
 import { curves } from '@kit.ArkUI';
-import { Home } from '../../../../../Index';
+import { Home } from '../../api';
 
 @Component
 export struct ChatList {
@@ -137,9 +134,9 @@ export struct ChatList {
                 let chat = this.chatDataSource.get(this.currentChatId);
                 Logger.debug('ChatList ChatItem onClick chatType: ' + chat?.chatType + ' forum: ' + chat?.forum);
                 
-                // 判断是否为 Split 模式（非 sm 断点）
+                // 鍒ゆ柇鏄惁涓?Split 妯″紡锛堥潪 sm 鏂偣锛?
                 const isSplitMode = this.currentBreakpoint !== BreakpointConstants.BREAKPOINT_SM;
-                // 判断当前是否已有 ChatDetail 页面
+                // 鍒ゆ柇褰撳墠鏄惁宸叉湁 ChatDetail 椤甸潰
                 let hasChatDetail : undefined | boolean = undefined;
                 try {
                   hasChatDetail = this.pageInfo && this.pageInfo?.size() >= 1 &&
@@ -275,3 +272,5 @@ export struct ChatList {
     }
   }
 }
+
+

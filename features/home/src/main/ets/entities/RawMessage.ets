@@ -1,5 +1,5 @@
-import sql from "@liushengyi/smartdb"
-import { NativeRawMessage } from 'libhomogrape.so'
+﻿import sql from "@liushengyi/smartdb"
+import { NativeRawMessage } from '../api'
 
 export class RawMessage {
   @sql.SqlColumn(sql.ColumnType.INTEGER)
@@ -19,3 +19,4 @@ export class RawMessage {
     return new RawMessage(native.chatId, native.messageId, new Uint8Array(native.rawMessage));
   }
 }
+

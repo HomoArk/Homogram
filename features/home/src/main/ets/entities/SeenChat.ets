@@ -1,6 +1,6 @@
-import sql from '@liushengyi/smartdb';
+﻿import sql from '@liushengyi/smartdb';
 import { Base64 } from '@ohos/base64';
-import { NativeSeenChat, ChatType } from 'libhomogrape.so';
+import { NativeSeenChat, ChatType } from '../api';
 
 export class SeenChat {
   @sql.SqlColumn(sql.ColumnType.INTEGER)
@@ -94,3 +94,5 @@ export class SeenChat {
     return native;
   }
 }
+
+
