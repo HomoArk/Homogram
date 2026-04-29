@@ -6,7 +6,7 @@
     },
     {
       "name": "app_name",
-      "value": "Gramony"
+      "value": "Homogram"
     },
     {
       "name": "message_code_copied",
@@ -26,15 +26,15 @@
     },
     {
       "name": "EntryAbility_label",
-      "value": "Gramony"
+      "value": "Homogram"
     },
     {
       "name": "AppletAbility_label",
-      "value": "Gramony"
+      "value": "Homogram"
     },
     {
       "name": "DocumentAbility_label",
-      "value": "Gramony"
+      "value": "Homogram"
     }
   ]
 }

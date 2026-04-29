@@ -1,17 +1,15 @@
 <p align="center">
-  <img width="20%" alt="Gramony" src="https://github.com/user-attachments/assets/6d0b6d9d-8e1e-403b-b3d3-6f3189af08f1" />
+  <img src="./assets/logo.png" width="20%" style="border-radius:25%"/>
 </p>
 
-<h1 align="center">Gramony for Telegram</h1>
+<h1 align="center">Homogram</h1>
 
-**Gramony** is a 3rd-party Telegram client for [HarmonyOS NEXT](https://developer.huawei.com/consumer/cn/), driven by
-ArkTS/ArkUI (UI-layer) and Rust (native-layer). It is a fork of the unmaintained Homogram.
+Homogram is a 3rd-party Telegram client for [HarmonyOS 5](https://developer.huawei.com/consumer/cn/), driven by
+ArkTS/ArkUI (UI-layer) and Rust (native-layer).
 
 _This project is a hobby project and is not affiliated with either Telegram or Huawei._
 
-<p align="center">&gt;&gt;&gt;<img src="https://api.iconify.design/logos/telegram.svg" alt="telegram-logo"> <a href="https://t.me/GramonyApp">Telegram channel</a> &lt;&lt;&lt;</p>
-
-* * *
+**NEWS: Starting from 2nd Dec, 2024, [出境易](https://appgallery.huawei.com/app/detail?id=com.easy.hmos.abroad) provides a full-featured environment to download and use Android Apps. You can use the official Telegram client inside it's Android container.**
 
 ## Branches
 
@@ -21,24 +19,16 @@ _This project is a hobby project and is not affiliated with either Telegram or H
 
 ## Roadmap
 
-- [x] Login with phone number, authorizing with verification code and (optionally) password with animated introduction
+- [x] Login with phone number, authorizing with verification code and (optionally) password
 - [x] Loading chats and recent N messages
 - [x] Rendering text and photo preview in messages
 - [x] Sending text messages
 - [x] Adaptive dark/light mode
 - [x] Jump to reply in chat
-- [ ] Contacts list
-- [ ] Profile page for chat
-- [ ] Folders
-- [ ] Saved messages
 - [ ] Message prefetching on scroll
 - [ ] Full-screen view for medias
-  - [x] Image
-  - [ ] Documents
 - [ ] Sending medias/files
 - [ ] Reply to messages
-- [ ] Proxy
-  - [ ] Socks5 
 - [ ] VOIP integration
 - [ ] [HMS Push Kit](https://developer.huawei.com/consumer/cn/sdk/push-kit) (depends on Telegram's server-side
   support https://github.com/tdlib/td/issues/3057)
@@ -53,10 +43,9 @@ A detailed Roadmap can be found in the [Homogram Project](https://github.com/org
 
 - A Windows or MacOS device which supports [DecEco Studio](https://developer.huawei.com/consumer/cn/deveco-studio/) and
   Rust toolchain.
-- Tested on Mate 60 Pro+ & Pura 70 Ultra,
-  HarmonyOS 5.1.0 (API 17),
-  OpenHarmony SDK 5.0.1.106 (API 15) and Rust 1.82.0.
-  Other configurations may work but are not guaranteed.
+- Tested on Mate 60 Pro ALN-AL80 5.0.0.107, OpenHarmony SDK 5.0.1.106 (API 13 Beta 3) and Rust 1.82.0. Other
+  configurations may work
+  but are not guaranteed.
 
 1. Clone the repository:
    ```shell

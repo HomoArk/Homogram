@@ -1,7 +1,7 @@
 {
   "app": {
     "bundleName": "com.xymeng16.homogram",
-    "vendor": "Gramony Developer",
+    "vendor": "Homogram Developer",
     "versionCode": 1006205,
     "versionName": "1.6.3",
     "icon": "$media:app_icon",
