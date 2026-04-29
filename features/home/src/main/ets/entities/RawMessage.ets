@@ -1,7 +1,7 @@
 import sql from "@liushengyi/smartdb"
 import { NativeRawMessage } from 'libhomogrape.so'
 
-export class RawMessage implements NativeRawMessage {
+export class RawMessage {
   @sql.SqlColumn(sql.ColumnType.INTEGER)
   chatId: number;
   @sql.SqlColumn(sql.ColumnType.INTEGER)

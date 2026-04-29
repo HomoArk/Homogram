@@ -3,9 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/Homogram.iml" filepath="$PROJECT_DIR$/.idea/modules/Homogram.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/base/base.iml" filepath="$PROJECT_DIR$/.idea/modules/base/base.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/home/home.iml" filepath="$PROJECT_DIR$/.idea/modules/home/home.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/phone/phone.iml" filepath="$PROJECT_DIR$/.idea/modules/phone/phone.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/base.iml" filepath="$PROJECT_DIR$/.idea/modules/base.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/home.iml" filepath="$PROJECT_DIR$/.idea/modules/home.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/phone.iml" filepath="$PROJECT_DIR$/.idea/modules/phone.iml" />
     </modules>
   </component>
 </project>

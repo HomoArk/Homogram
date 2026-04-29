@@ -25,13 +25,13 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "storePassword": "0000001D0B4CB13D1A547A0F2FF91DA382162D9006D2102203C7A17AC2BAAE459BD1DA8FA84240C2169CBFCA02",
-          "certpath": "./signing/Homogram_Debug.cer",
+          "storeFile": "./signing/keystore.p12",
+          "storePassword": "0000001DAF9C8162E04A0CBCD76D72CED2F9728E2F7A460578E6782C442D99B5C2E5B1A1D620BDE5E4DB9DCA14",
           "keyAlias": "keystore",
-          "keyPassword": "0000001DA32D34919F41359B0CD97331538758E70FC5BB327E35EDCBA4202D3A493649B532EA4FE31DF0DB7B74",
-          "profile": "./signing/homogram_debug.p7b",
+          "keyPassword": "0000001D961FAF5A8C4E304042DB9205FDDCDF9202D10A77E207AFEFD87AD0F159EDA9FAA8752640B4F67ED3DC",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "./signing/keystore.p12"
+          "profile": "./signing/homogram_debug.p7b",
+          "certpath": "./signing/Homogram_Debug.cer"
         }
       }
     ]
