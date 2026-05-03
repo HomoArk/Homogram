@@ -1,11 +1,14 @@
 import { common } from '@kit.AbilityKit';
+import { Logger } from '@ohos/base';
 import { telegramBridge, LoginState, NativeSeenChat } from '../bridge/TelegramBridge';
 import { autoRegisterPushIfNeeded } from '../utils';
 import { telegramSyncService } from './TelegramSyncService';
 
 class SessionService {
   async isLoggedIn(): Promise<boolean> {
-    return telegramBridge.isLoggedIn();
+    const authorized = await telegramBridge.isLoggedIn();
+    Logger.info('SessionService isLoggedIn: ' + authorized);
+    return authorized;
   }
 
   async login(phoneNumber: string): Promise<LoginState> {
@@ -30,8 +33,10 @@ class SessionService {
   }
 
   async onAuthorized(context: common.UIAbilityContext): Promise<NativeSeenChat> {
-    const me = await this.getMe();
+    Logger.info('SessionService onAuthorized: refresh chats');
     await telegramSyncService.refreshChats();
+    Logger.info('SessionService onAuthorized: get self profile');
+    const me = await this.getMe();
     await autoRegisterPushIfNeeded(context);
     await telegramSyncService.start();
     return me;

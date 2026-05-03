@@ -1,0 +1,41 @@
+[
+  {
+    "capability": "check-single-file",
+    "constraints": [
+      "input only supports pure non-UI .ets",
+      "single entry file"
+    ],
+    "command_template": "cd arkts-cli && node ./bin/arkts-cli.js --input /abs/path/file.ets --out-dir /abs/path/out",
+    "usage_intent": [
+      "validation",
+      "authoring",
+      "review"
+    ]
+  },
+  {
+    "capability": "check-run-project",
+    "constraints": [
+      "input only supports pure non-UI .ets",
+      "entry must live under --input-dir in multi-file mode"
+    ],
+    "command_template": "cd arkts-cli && node ./bin/arkts-cli.js --input /abs/path/main.ets --input-dir /abs/path/src --out-dir /abs/path/out --run",
+    "usage_intent": [
+      "run",
+      "validation",
+      "debugging"
+    ]
+  },
+  {
+    "capability": "snippet-validation",
+    "constraints": [
+      "currently focused on 02-Basic-Syntax",
+      "expects markdown fenced code blocks tagged as typescript"
+    ],
+    "command_template": "python3 ./tools/snippets_cli.py test --scope 02-Basic-Syntax --file advanced-operators.md",
+    "usage_intent": [
+      "testing",
+      "validation",
+      "debugging"
+    ]
+  }
+]

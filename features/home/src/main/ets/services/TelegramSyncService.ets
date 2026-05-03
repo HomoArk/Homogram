@@ -1,178 +1,74 @@
-import { Logger } from '@ohos/base';
-import { HashMap } from '@kit.ArkTS';
-import { telegramBridge, NativeChat, NativeMessage, NativeSeenChat } from '../bridge/TelegramBridge';
-import { telegramCacheRepository } from '../repositories/TelegramCacheRepository';
+import { ChatActionResult } from '../bridge/TelegramBridge';
 import { Chat } from '../entities/Chat';
-import { Message } from '../entities/Message';
 import { SeenChat } from '../entities/SeenChat';
-import { ChatDataSource } from '../viewmodel/Chat/ChatDataSource';
-import { MessageDataSource } from '../viewmodel/Message/MessageDataSource';
-
-export interface TelegramRuntimeContext {
-  chatDataSource: ChatDataSource;
-  messagesOfChatMap: HashMap<string, MessageDataSource>;
-  seenChatsMap: HashMap<string, SeenChat>;
-}
+import { TelegramChatActionsService } from './TelegramChatActionsService';
+import { TelegramContactsService } from './TelegramContactsService';
+import { TelegramMessageActionsService } from './TelegramMessageActionsService';
+import { TelegramRuntimeContext, TelegramRuntimeState } from './TelegramRuntimeState';
+import { TelegramRuntimeService } from './TelegramRuntimeService';
+import { TelegramUpdateService } from './TelegramUpdateService';
 
 class TelegramSyncService {
-  private context?: TelegramRuntimeContext;
-  private hydrated: boolean = false;
+  private state: TelegramRuntimeState = new TelegramRuntimeState();
+  private updateService: TelegramUpdateService = new TelegramUpdateService(this.state);
+  private runtimeService: TelegramRuntimeService = new TelegramRuntimeService(this.state, this.updateService);
+  private contactsService: TelegramContactsService = new TelegramContactsService(this.state);
+  private chatActionsService: TelegramChatActionsService =
+    new TelegramChatActionsService(this.state, this.updateService);
+  private messageActionsService: TelegramMessageActionsService =
+    new TelegramMessageActionsService(this.updateService);
 
   async initialize(context: TelegramRuntimeContext): Promise<void> {
-    this.context = context;
-    await telegramBridge.initialize({
-      onSeenChatCached: async (seenChat: NativeSeenChat): Promise<void> => this.onSeenChatCached(seenChat),
-      onChatUpdated: async (seenChat: NativeSeenChat, chat: NativeChat, messages: NativeMessage[]): Promise<void> =>
-        this.onChatUpdated(seenChat, chat, messages),
-      onIncomingMessage: async (chat: NativeChat | undefined, message: NativeMessage): Promise<void> =>
-        this.onIncomingMessage(chat, message),
-    });
+    await this.runtimeService.initialize(context);
   }
 
   async hydrateFromCache(): Promise<void> {
-    if (!this.context || this.hydrated) {
-      return;
-    }
-
-    const cached = await telegramCacheRepository.hydrate();
-    this.context.chatDataSource.replaceAll(cached.chats);
-    this.context.seenChatsMap.clear();
-    for (const seenChat of cached.seenChatsMap.values()) {
-      this.context.seenChatsMap.set(seenChat.chatId.toString(), seenChat);
-    }
-    this.context.messagesOfChatMap.clear();
-    const entries = this.entries(cached.messagesByChatId);
-    for (let i = 0; i < entries.length; i++) {
-      this.context.messagesOfChatMap.set(entries[i].key, entries[i].value);
-    }
-    await telegramBridge.syncCachesFromLocalDb(
-      cached.packedChats,
-      cached.chats.map((chat) => chat.toNative()),
-    );
-    this.hydrated = true;
+    await this.runtimeService.hydrateFromCache();
   }
 
   async refreshChats(): Promise<void> {
-    if (!this.context) {
-      return;
-    }
-
-    const lastMessageIds = new Map<string, number>();
-    for (const chat of this.context.chatDataSource.getPinnedChatsArray()) {
-      lastMessageIds.set(chat.chatId.toString(), chat.lastMessageId);
-    }
-    for (const chat of this.context.chatDataSource.getSortedUnpinnedChatsArray()) {
-      lastMessageIds.set(chat.chatId.toString(), chat.lastMessageId);
-    }
-    const lastMessageIdsRecord: Record<string, number> = {};
-    for (const key of lastMessageIds.keys()) {
-      const value = lastMessageIds.get(key);
-      if (value !== undefined) {
-        lastMessageIdsRecord[key] = value;
-      }
-    }
-    await telegramBridge.loadChatsWithOffset(lastMessageIdsRecord);
+    await this.runtimeService.refreshChats();
   }
 
   async start(): Promise<void> {
-    await telegramBridge.startSync();
+    await this.runtimeService.start();
   }
 
   async stop(): Promise<void> {
-    await telegramBridge.stopSync();
+    await this.runtimeService.stop();
   }
 
   async reconnectAndStart(): Promise<boolean> {
-    const authorized = await telegramBridge.reconnect();
-    if (authorized) {
-      await this.start();
-    }
-    return authorized;
+    return this.runtimeService.reconnectAndStart();
   }
 
-  private async onSeenChatCached(nativeSeenChat: NativeSeenChat): Promise<void> {
-    if (!this.context) {
-      return;
-    }
-
-    const seenChat = await telegramCacheRepository.cacheSeenChat(nativeSeenChat);
-    this.context.seenChatsMap.set(seenChat.chatId.toString(), seenChat);
+  async loadContacts(): Promise<SeenChat[]> {
+    return this.contactsService.loadContacts();
   }
 
-  private async onChatUpdated(nativeSeenChat: NativeSeenChat, nativeChat: NativeChat, nativeMessages: NativeMessage[]): Promise<void> {
-    if (!this.context) {
-      return;
-    }
-
-    const cachedPair = await telegramCacheRepository.cacheChatPair(nativeSeenChat, nativeChat);
-    const messages = await telegramCacheRepository.cacheMessages(nativeMessages);
-
-    this.context.seenChatsMap.set(cachedPair.seenChat.chatId.toString(), cachedPair.seenChat);
-    this.context.chatDataSource.upsert(cachedPair.chat);
-    this.ensureMessages(cachedPair.chat.chatId).append(messages);
+  async openChat(chatId: number): Promise<Chat | undefined> {
+    return this.chatActionsService.openChat(chatId);
   }
 
-  private async onIncomingMessage(nativeChat: NativeChat | undefined, nativeMessage: NativeMessage): Promise<void> {
-    if (!this.context) {
-      return;
-    }
-
-    const message = await telegramCacheRepository.cacheMessage(nativeMessage);
-    const messageDataSource = this.ensureMessages(message.chatId);
-
-    if (nativeChat) {
-      const chat = await telegramCacheRepository.cacheChat(nativeChat);
-      this.context.chatDataSource.upsert(chat);
-    } else {
-      const existingChat = this.context.chatDataSource.get(message.chatId.toString());
-      if (existingChat) {
-        existingChat.lastMessageId = message.messageId;
-        existingChat.lastMessageSenderName = message.senderName;
-        existingChat.lastMessageText = message.text;
-        existingChat.lastMessageTimestamp = message.timestamp;
-        this.context.chatDataSource.upsert(existingChat);
-        await telegramCacheRepository.cacheChat(existingChat.toNative());
-      } else {
-        Logger.error(`Incoming message received for unknown chat ${message.chatId}`);
-      }
-    }
-
-    messageDataSource.upsert(message);
+  async deleteMessages(chatId: number, messageIds: number[]): Promise<ChatActionResult> {
+    return this.messageActionsService.deleteMessages(chatId, messageIds);
   }
 
-  private ensureMessages(chatId: number): MessageDataSource {
-    if (!this.context) {
-      return new MessageDataSource();
-    }
-    const key = chatId.toString();
-    let dataSource = this.context.messagesOfChatMap.get(key);
-    if (!dataSource) {
-      dataSource = new MessageDataSource();
-      this.context.messagesOfChatMap.set(key, dataSource);
-    }
-    return dataSource;
+  async markChatRead(chatId: number): Promise<ChatActionResult> {
+    return this.chatActionsService.markChatRead(chatId);
   }
 
-  private entries<T>(map: HashMap<string, T>): Array<HashMapEntry<T>> {
-    const result: Array<HashMapEntry<T>> = [];
-    for (const key of map.keys()) {
-      const value = map.get(key);
-      if (value !== undefined) {
-        result.push(new HashMapEntry<T>(key, value));
-      }
-    }
-    return result;
+  async setChatPinned(chatId: number, pinned: boolean): Promise<ChatActionResult> {
+    return this.chatActionsService.setPinned(chatId, pinned);
+  }
+
+  async setChatMuted(chatId: number, muted: boolean): Promise<ChatActionResult> {
+    return this.chatActionsService.setMuted(chatId, muted);
+  }
+
+  async setChatArchived(chatId: number, archived: boolean): Promise<ChatActionResult> {
+    return this.chatActionsService.setArchived(chatId, archived);
   }
 }
 
 export const telegramSyncService = new TelegramSyncService();
-
-class HashMapEntry<T> {
-  key: string;
-  value: T;
-
-  constructor(key: string, value: T) {
-    this.key = key;
-    this.value = value;
-  }
-}

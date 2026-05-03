@@ -29,6 +29,7 @@ export struct ChatDetailBottomPhotoPicker {
   @State isBlock: boolean = false; // whether to allow opening system camera
   @Link selectedMediaCount: number;
   @Link animate: boolean;
+  @Link selectedMedias: Array<string>;
 
   build() {
     PhotoPickerComponent({
@@ -147,6 +148,7 @@ export struct ChatDetailBottomPhotoPicker {
     }
     // 将uri保存起来，并保证切换不同的宫格页组件时保持选中项一致
     this.pickerOptions.preselectedUris = [...this.selectedUris];
+    this.selectedMedias = [...this.selectedUris];
     this.selectedMediaCount = this.selectedUris.length;
     console.info('onSelect' + JSON.stringify(this.selectedUris));
   }
@@ -160,6 +162,7 @@ export struct ChatDetailBottomPhotoPicker {
     }
     // 排除反勾选uri，并保证切换不同的宫格页组件时保持选中项一致
     this.pickerOptions.preselectedUris = [...this.selectedUris];
+    this.selectedMedias = [...this.selectedUris];
     this.selectedMediaCount = this.selectedUris.length;
     console.info('onDeselect' + JSON.stringify(this.selectedUris));
   }
@@ -192,6 +195,7 @@ export struct ChatDetailBottomPhotoPicker {
         if (uri) {
           this.selectedUris.push(uri)
           this.pickerOptions.preselectedUris = [...this.selectedUris];
+          this.selectedMedias = [...this.selectedUris];
         }
       } else { //反选
         if (uri) {
@@ -200,6 +204,7 @@ export struct ChatDetailBottomPhotoPicker {
             return item !== uri;
           })
           this.pickerOptions.preselectedUris = [...this.selectedUris];
+          this.selectedMedias = [...this.selectedUris];
         }
       }
     } else {

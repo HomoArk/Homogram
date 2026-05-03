@@ -11,6 +11,16 @@ export class Chat implements NativeChat, IComparable<Chat> {
   name: string;
   @sql.SqlColumn(sql.ColumnType.BOOL)
   pinned: boolean;
+  @sql.SqlColumn(sql.ColumnType.INTEGER)
+  unreadCount: number;
+  @sql.SqlColumn(sql.ColumnType.INTEGER)
+  readInboxMaxId: number;
+  @sql.SqlColumn(sql.ColumnType.INTEGER)
+  readOutboxMaxId: number;
+  @sql.SqlColumn(sql.ColumnType.BOOL)
+  muted: boolean;
+  @sql.SqlColumn(sql.ColumnType.BOOL)
+  archived: boolean;
   @sql.SqlColumn(sql.ColumnType.TEXT)
   lastMessageSenderName: string;
   @sql.SqlColumn(sql.ColumnType.INTEGER)
@@ -25,12 +35,18 @@ export class Chat implements NativeChat, IComparable<Chat> {
   forum: boolean;
 
   constructor(chatId: number, chatType: ChatType, name: string, pinned: boolean, lastMessageId: number,
-    lastMessageSenderName: string,
-    lastMessageText: string, lastMessageTimestamp: number, megagroup: boolean, forum: boolean) {
+    lastMessageSenderName: string, lastMessageText: string, lastMessageTimestamp: number, megagroup: boolean,
+    forum: boolean, unreadCount: number = 0, readInboxMaxId: number = 0, readOutboxMaxId: number = 0,
+    muted: boolean = false, archived: boolean = false) {
     this.chatId = chatId;
     this.chatType = chatType;
     this.name = name;
     this.pinned = pinned;
+    this.unreadCount = unreadCount;
+    this.readInboxMaxId = readInboxMaxId;
+    this.readOutboxMaxId = readOutboxMaxId;
+    this.muted = muted;
+    this.archived = archived;
     this.lastMessageId = lastMessageId;
     this.lastMessageSenderName = lastMessageSenderName;
     this.lastMessageText = lastMessageText;
@@ -43,7 +59,8 @@ export class Chat implements NativeChat, IComparable<Chat> {
     return new Chat(nativeChat.chatId, nativeChat.chatType, nativeChat.name, nativeChat.pinned,
       nativeChat.lastMessageId, nativeChat.lastMessageSenderName, nativeChat.lastMessageText,
       nativeChat.lastMessageTimestamp, nativeChat.megagroup,
-      nativeChat.forum);
+      nativeChat.forum, nativeChat.unreadCount ?? 0, nativeChat.readInboxMaxId ?? 0, nativeChat.readOutboxMaxId ?? 0,
+      nativeChat.muted ?? false, nativeChat.archived ?? false);
   }
 
   public toNative(): NativeChat {
@@ -52,6 +69,11 @@ export class Chat implements NativeChat, IComparable<Chat> {
       chatType: this.chatType,
       name: this.name,
       pinned: this.pinned,
+      unreadCount: this.unreadCount,
+      readInboxMaxId: this.readInboxMaxId,
+      readOutboxMaxId: this.readOutboxMaxId,
+      muted: this.muted,
+      archived: this.archived,
       lastMessageId: this.lastMessageId,
       lastMessageSenderName: this.lastMessageSenderName,
       lastMessageText: this.lastMessageText,

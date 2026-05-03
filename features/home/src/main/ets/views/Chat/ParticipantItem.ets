@@ -89,11 +89,11 @@ export struct ParticipantItem {
   }
 
   private getInitials(): string {
-    const fullName = this.participant?.fullName || '';
+    const fullName: string = this.participant?.fullName || '';
     if (fullName.length === 0) {
       return '?';
     }
-    const parts = fullName.split(' ');
+    const parts: string[] = fullName.split(' ');
     if (parts.length >= 2) {
       return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
     }
@@ -102,7 +102,7 @@ export struct ParticipantItem {
 
   private getAvatarColor(): Color {
     // 鏍规嵁鐢ㄦ埛 ID 鐢熸垚涓€涓浐瀹氱殑棰滆壊
-    const userId = this.participant?.userId || 0;
+    const userId: number = this.participant?.userId || 0;
     const colors: Color[] = [
       0xFF5722 as Color, // Deep Orange
       0x2196F3 as Color, // Blue

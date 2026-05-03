@@ -117,7 +117,8 @@ export struct ChatDetailBottomMediaSheet {
         TabContent() {
           ChatDetailBottomPhotoPicker({
             selectedMediaCount: $selectedMediaCount,
-            animate: $animate
+            animate: $animate,
+            selectedMedias: $selectedMedias
           })
         }
 

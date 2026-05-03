@@ -3,22 +3,35 @@ export { Index as Home } from "./src/main/ets/pages/Index";
 export {
   telegramBridge,
   ChatType,
+  ChatActionResult,
+  DeletedMessagesCallback,
+  EditedMessageCallback,
   IncomingMessageCallback,
   LoginState,
   MediaType,
   MessageEntityType,
   NativeChat,
+  NativeDeletedMessages,
+  NativeMediaInput,
+  NativeMediaInputRecord,
   NativeMessage,
   NativeMessageEntity,
-  NativePackedChat,
   NativeParticipant,
   NativeParticipantRole,
-  NativeRawMessage,
+  NativeReadState,
+  NativeSearchResult,
+  NativeSearchResultKind,
+  NativeSendState,
   NativeSeenChat,
+  ReadStateCallback,
   UpdateChatCallback,
+  UploadProgressCallback,
+  deleteMessages,
   downloadMediaFromMessage,
   downloadProfilePhoto,
+  editMessage,
   forwardMessages,
+  getContacts,
   getChatPhotoThumb,
   getMe,
   getParticipants,
@@ -27,15 +40,23 @@ export {
   loadChatsWithOffset,
   loadHistoryMessages,
   login,
+  markChatRead,
+  openChat,
   password,
   reconnect,
   registerDevice,
   registerPush,
+  resolvePeerByUsername,
   run,
+  searchAllMessages,
+  searchKnownPeers,
+  searchMessages,
   sendMessage,
+  setChatArchived,
+  setChatMuted,
+  setChatPinned,
   signOut,
   stop,
-  syncCachesFromLocalDb,
   unregisterPush,
   verifyCode,
 } from "./src/main/ets/bridge/TelegramBridge";
@@ -43,16 +64,5 @@ export {
 export { appLifecycleService } from "./src/main/ets/services/AppLifecycleService";
 export { sessionService } from "./src/main/ets/services/SessionService";
 export { telegramSyncService } from "./src/main/ets/services/TelegramSyncService";
-export { telegramCacheRepository } from "./src/main/ets/repositories/TelegramCacheRepository";
-
-export { chatDao } from "./src/main/ets/dao/ChatDao";
-
-export { messageDao } from "./src/main/ets/dao/MessageDao";
-
-export { packedChatDao } from "./src/main/ets/dao/PackedChatDao";
-
-export { rawMessageDao } from "./src/main/ets/dao/RawMessageDao";
-
-export { seenChatDao } from "./src/main/ets/dao/SeenChatDao";
 
 export { EventConstants } from "./src/main/ets/constants/EventConstants";

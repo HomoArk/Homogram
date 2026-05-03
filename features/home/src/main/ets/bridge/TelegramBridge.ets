@@ -1,41 +1,70 @@
+import { Logger } from '@ohos/base';
 import {
   ChatType,
-  downloadMediaFromMessage as nativeDownloadMediaFromMessage,
+  deleteMessages as nativeDeleteMessages,
+  downloadMedia as nativeDownloadMedia,
   downloadProfilePhoto as nativeDownloadProfilePhoto,
+  editMessage as nativeEditMessage,
   forwardMessages as nativeForwardMessages,
   getChatPhotoThumb as nativeGetChatPhotoThumb,
+  getContacts as nativeGetContacts,
+  getDialogs as nativeGetDialogs,
+  getEventsSince as nativeGetEventsSince,
   getMe as nativeGetMe,
+  getMessages as nativeGetMessages,
   getParticipants as nativeGetParticipants,
   getProfilePhotoPathAndCount as nativeGetProfilePhotoPathAndCount,
+  initialize as nativeInitialize,
   isLoggedIn as nativeIsLoggedIn,
-  loadChatsWithOffset as nativeLoadChatsWithOffset,
-  loadHistoryMessages as nativeLoadHistoryMessages,
   LoginState,
-  login as nativeLogin,
+  markChatRead as nativeMarkChatRead,
   MediaType,
+  MessageEntityType,
+  NativeActionResult,
+  NativeAuthState,
   NativeChat,
+  NativeDeletedMessages,
+  NativeDialog,
+  NativeDialogFlags,
+  NativeDialogPage,
+  NativeEvent,
+  NativeEventKind,
+  NativeMediaInput,
+  NativeMediaResult,
   NativeMessage,
   NativeMessageEntity,
-  MessageEntityType,
-  NativePackedChat,
+  NativeMessagePage,
   NativeParticipant,
   NativeParticipantRole,
-  NativeRawMessage,
-  NativeSeenChat,
-  password as nativePassword,
-  reconnect as nativeReconnect,
-  registerCacheSeenChatCallback as nativeRegisterCacheSeenChatCallback,
+  NativePeer,
+  NativeProfilePhotoPathAndCount,
+  NativeProgress,
+  NativeReadState,
+  NativeRuntimeOptions,
+  NativeRuntimeState,
+  NativeSearchPage,
+  NativeSearchResult,
+  NativeSearchResultKind,
+  NativeSendRequest,
+  NativeSendResult,
+  NativeSendState,
+  openChat as nativeOpenChat,
+  reconnectRuntime as nativeReconnectRuntime,
   registerDevice as nativeRegisterDevice,
-  registerIncomingMessageCallback as nativeRegisterIncomingMessageCallback,
   registerPush as nativeRegisterPush,
-  registerUpdateChatCallback as nativeRegisterUpdateChatCallback,
-  run as nativeRun,
+  requestLoginCode as nativeRequestLoginCode,
+  resolvePeerByUsername as nativeResolvePeerByUsername,
+  searchMessages as nativeSearchMessages,
+  searchPeers as nativeSearchPeers,
   sendMessage as nativeSendMessage,
+  setDialogFlags as nativeSetDialogFlags,
+  setEventCallback as nativeSetEventCallback,
   signOut as nativeSignOut,
-  stop as nativeStop,
-  syncCachesFromLocalDb as nativeSyncCachesFromLocalDb,
+  startRuntime as nativeStartRuntime,
+  stopRuntime as nativeStopRuntime,
+  submitLoginCode as nativeSubmitLoginCode,
+  submitPassword as nativeSubmitPassword,
   unregisterPush as nativeUnregisterPush,
-  verifyCode as nativeVerifyCode,
 } from 'libhomogrape.so';
 
 export {
@@ -43,53 +72,136 @@ export {
   LoginState,
   MediaType,
   MessageEntityType,
+  NativeActionResult,
+  NativeAuthState,
   NativeChat,
+  NativeDeletedMessages,
+  NativeDialog,
+  NativeDialogFlags,
+  NativeDialogPage,
+  NativeEvent,
+  NativeEventKind,
+  NativeMediaInput,
+  NativeMediaResult,
   NativeMessage,
   NativeMessageEntity,
-  NativePackedChat,
+  NativeMessagePage,
   NativeParticipant,
   NativeParticipantRole,
-  NativeRawMessage,
-  NativeSeenChat,
+  NativePeer,
+  NativeProfilePhotoPathAndCount,
+  NativeProgress,
+  NativeReadState,
+  NativeRuntimeOptions,
+  NativeRuntimeState,
+  NativeSearchPage,
+  NativeSearchResult,
+  NativeSearchResultKind,
+  NativeSendRequest,
+  NativeSendResult,
+  NativeSendState,
 };
 
+export type NativeSeenChat = NativePeer;
+export type ChatActionResult = NativeActionResult;
+
 export type IncomingMessageCallback = (err: Error | null, chat: NativeChat | undefined, message: NativeMessage) => Promise<void>;
-export type UpdateChatCallback = (err: Error | null, seenChat: NativeSeenChat, chat: NativeChat, messages: NativeMessage[]) => Promise<void>;
+export type UpdateChatCallback = (err: Error | null, seenChat: NativeSeenChat | undefined, chat: NativeChat,
+  messages: NativeMessage[]) => Promise<void>;
+export type EditedMessageCallback = (message: NativeMessage) => Promise<void>;
+export type DeletedMessagesCallback = (deletedMessages: NativeDeletedMessages) => Promise<void>;
+export type ReadStateCallback = (readState: NativeReadState) => Promise<void>;
+export type UploadProgressCallback = (mediaIndex: number, currentProgress: number) => void;
 
 export interface ProfilePhotoPathAndCount {
+  dir?: string;
   current?: string;
+  next?: string;
   count: number;
 }
 
 export interface TelegramBridgeEvents {
   onSeenChatCached?: (seenChat: NativeSeenChat) => void | Promise<void>;
-  onChatUpdated?: (seenChat: NativeSeenChat, chat: NativeChat, messages: NativeMessage[]) => void | Promise<void>;
+  onChatUpdated?: (seenChat: NativeSeenChat | undefined, chat: NativeChat, messages: NativeMessage[]) => void | Promise<void>;
   onIncomingMessage?: (chat: NativeChat | undefined, message: NativeMessage) => void | Promise<void>;
+  onEditedMessage?: (message: NativeMessage) => void | Promise<void>;
+  onDeletedMessages?: (deletedMessages: NativeDeletedMessages) => void | Promise<void>;
+  onReadState?: (readState: NativeReadState) => void | Promise<void>;
+}
+
+export class NativeRuntimeOptionsRecord implements NativeRuntimeOptions {
+  eventReplayLimit?: number;
+
+  constructor(eventReplayLimit?: number) {
+    this.eventReplayLimit = eventReplayLimit;
+  }
+}
+
+export class NativeMediaInputRecord implements NativeMediaInput {
+  path: string;
+  mediaType: MediaType;
+  caption?: string;
+
+  constructor(path: string, mediaType: MediaType = MediaType.None, caption?: string) {
+    this.path = path;
+    this.mediaType = mediaType;
+    this.caption = caption;
+  }
+}
+
+class NativeSendRequestRecord implements NativeSendRequest {
+  chatId: number;
+  text: string;
+  replyToMessageId?: number;
+  medias?: NativeMediaInput[];
+
+  constructor(chatId: number, text: string, replyToMessageId?: number, medias?: NativeMediaInput[]) {
+    this.chatId = chatId;
+    this.text = text;
+    this.replyToMessageId = replyToMessageId;
+    this.medias = medias;
+  }
+}
+
+class NativeDialogFlagsRecord implements NativeDialogFlags {
+  pinned?: boolean;
+  muted?: boolean;
+  archived?: boolean;
+
+  constructor(pinned?: boolean, muted?: boolean, archived?: boolean) {
+    this.pinned = pinned;
+    this.muted = muted;
+    this.archived = archived;
+  }
 }
 
 class TelegramBridge {
   private started: boolean = false;
   private callbacksRegistered: boolean = false;
   private events: TelegramBridgeEvents = {};
+  private lastEventSeq: number = 0;
+  private uploadProgressCallbacks: UploadProgressCallback[] = [];
 
   async initialize(events: TelegramBridgeEvents): Promise<void> {
     this.events = events;
-    if (this.callbacksRegistered) {
-      return;
+    if (!this.callbacksRegistered) {
+      Logger.info('TelegramBridge initialize: native runtime initialize');
+      const state: NativeRuntimeState = await nativeInitialize(new NativeRuntimeOptionsRecord(256));
+      Logger.info('TelegramBridge initialize: authorized=' + state.authorized + ' running=' + state.running +
+        ' lastEventSeq=' + state.lastEventSeq);
+      this.lastEventSeq = state.lastEventSeq;
+      await nativeSetEventCallback(async (event: NativeEvent): Promise<void> => {
+        await this.handleNativeEvent(event);
+      });
+      this.callbacksRegistered = true;
+      await this.replayMissedEvents();
     }
-
-    const onSeenChatCached = this.toCacheSeenChatCallback();
-    const onChatUpdated = this.toUpdateChatCallback();
-    const onIncomingMessage = this.toIncomingMessageCallback();
-
-    await nativeRegisterCacheSeenChatCallback(onSeenChatCached);
-    await nativeRegisterUpdateChatCallback(onChatUpdated);
-    await nativeRegisterIncomingMessageCallback(onIncomingMessage);
-    this.callbacksRegistered = true;
   }
 
   async isLoggedIn(): Promise<boolean> {
-    return nativeIsLoggedIn();
+    const authorized = await nativeIsLoggedIn();
+    Logger.info('TelegramBridge isLoggedIn: ' + authorized);
+    return authorized;
   }
 
   async registerDevice(token: string): Promise<boolean> {
@@ -97,15 +209,18 @@ class TelegramBridge {
   }
 
   async login(phoneNumber: string): Promise<LoginState> {
-    return nativeLogin(phoneNumber);
+    const state: NativeAuthState = await nativeRequestLoginCode(phoneNumber);
+    return state.loginState;
   }
 
   async verifyCode(code: string): Promise<LoginState> {
-    return nativeVerifyCode(code);
+    const state: NativeAuthState = await nativeSubmitLoginCode(code);
+    return state.loginState;
   }
 
   async password(password: string): Promise<LoginState> {
-    return nativePassword(password);
+    const state: NativeAuthState = await nativeSubmitPassword(password);
+    return state.loginState;
   }
 
   async signOut(): Promise<boolean> {
@@ -114,65 +229,142 @@ class TelegramBridge {
   }
 
   async startSync(): Promise<void> {
-    if (this.started) {
-      return;
-    }
-    await nativeRun();
+    Logger.info('TelegramBridge startSync: start');
+    await nativeStartRuntime();
     this.started = true;
+    Logger.info('TelegramBridge startSync: done');
   }
 
   async stopSync(): Promise<void> {
     if (!this.started) {
       return;
     }
-    await nativeStop();
+    await nativeStopRuntime();
     this.started = false;
   }
 
   async reconnect(): Promise<boolean> {
-    return nativeReconnect();
+    Logger.info('TelegramBridge reconnect: start');
+    const state: NativeRuntimeState = await nativeReconnectRuntime();
+    this.started = state.running;
+    Logger.info('TelegramBridge reconnect: authorized=' + state.authorized + ' running=' + state.running);
+    return state.authorized;
   }
 
   async getMe(): Promise<NativeSeenChat> {
     return nativeGetMe();
   }
 
-  async loadChatsWithOffset(lastMessageIds: Record<string, number>): Promise<void> {
-    await nativeLoadChatsWithOffset(lastMessageIds);
+  async getDialogs(offsetDate?: number, limit?: number): Promise<NativeDialogPage> {
+    const page: NativeDialogPage = await nativeGetDialogs(offsetDate, limit);
+    Logger.info('TelegramBridge getDialogs: dialogs=' + page.dialogs.length + ' offsetDate=' +
+      (offsetDate ?? -1) + ' limit=' + (limit ?? -1));
+    return page;
+  }
+
+  async getMessages(chatId: number, beforeMessageId?: number, limit?: number): Promise<NativeMessagePage> {
+    const page: NativeMessagePage = await nativeGetMessages(chatId, beforeMessageId, limit);
+    Logger.info('TelegramBridge getMessages: chatId=' + chatId + ' messages=' + page.messages.length +
+      ' beforeMessageId=' + (beforeMessageId ?? -1) + ' limit=' + (limit ?? -1));
+    return page;
+  }
+
+  async loadChatsWithOffset(_lastMessageIds: Record<string, number>): Promise<void> {
+    await nativeStartRuntime();
+    this.started = true;
   }
 
   async loadHistoryMessages(chatId: number, beforeMessageId?: number, limit?: number): Promise<NativeMessage[]> {
-    return nativeLoadHistoryMessages(chatId, beforeMessageId, limit);
-  }
-
-  async syncCachesFromLocalDb(packedChats: NativePackedChat[], chats: NativeChat[]): Promise<void> {
-    await nativeSyncCachesFromLocalDb(packedChats, chats);
+    const page: NativeMessagePage = await nativeGetMessages(chatId, beforeMessageId, limit);
+    return page.messages;
   }
 
   async sendMessage(
     chatId: number,
     text: string,
     replyTo?: number,
-    medias?: string[],
-    onUploadProgress?: (mediaIndex: number, currentProgress: number) => void,
+    medias?: NativeMediaInput[],
+    onUploadProgress?: UploadProgressCallback,
   ): Promise<NativeMessage[]> {
-    const callback = (mediaIndex: number, currentProgress: number) => {
-      onUploadProgress?.(mediaIndex, currentProgress);
-    };
-    return nativeSendMessage(chatId, text, replyTo, medias, callback);
+    if (onUploadProgress) {
+      this.uploadProgressCallbacks.push(onUploadProgress);
+    }
+    try {
+      const result: NativeSendResult =
+        await nativeSendMessage(new NativeSendRequestRecord(chatId, text, replyTo, medias));
+      return result.messages;
+    } finally {
+      if (onUploadProgress) {
+        this.removeUploadProgressCallback(onUploadProgress);
+      }
+    }
+  }
+
+  async getContacts(): Promise<NativeSeenChat[]> {
+    return nativeGetContacts();
+  }
+
+  async resolvePeerByUsername(username: string): Promise<NativeSearchResult | undefined> {
+    const result: NativeSearchResult | null | undefined = await nativeResolvePeerByUsername(username);
+    return result ?? undefined;
+  }
+
+  async openChat(chatId: number): Promise<NativeSearchResult> {
+    return nativeOpenChat(chatId);
+  }
+
+  async searchKnownPeers(query: string, limit: number = 20): Promise<NativeSearchResult[]> {
+    const page: NativeSearchPage = await nativeSearchPeers(query, limit);
+    return page.results;
+  }
+
+  async searchMessages(chatId: number, query: string, limit: number = 20, offsetId?: number): Promise<NativeSearchResult[]> {
+    const page: NativeSearchPage = await nativeSearchMessages(chatId, query, offsetId, limit);
+    return page.results;
+  }
+
+  async searchAllMessages(query: string, limit: number = 20, offsetId?: number): Promise<NativeSearchResult[]> {
+    const page: NativeSearchPage = await nativeSearchMessages(undefined, query, offsetId, limit);
+    return page.results;
+  }
+
+  async editMessage(chatId: number, messageId: number, text: string): Promise<NativeMessage> {
+    return nativeEditMessage(chatId, messageId, text);
+  }
+
+  async deleteMessages(chatId: number, messageIds: number[]): Promise<ChatActionResult> {
+    return nativeDeleteMessages(chatId, messageIds);
+  }
+
+  async markChatRead(chatId: number): Promise<ChatActionResult> {
+    return nativeMarkChatRead(chatId);
+  }
+
+  async setChatPinned(chatId: number, pinned: boolean): Promise<ChatActionResult> {
+    return nativeSetDialogFlags(chatId, new NativeDialogFlagsRecord(pinned, undefined, undefined));
+  }
+
+  async setChatMuted(chatId: number, muted: boolean): Promise<ChatActionResult> {
+    return nativeSetDialogFlags(chatId, new NativeDialogFlagsRecord(undefined, muted, undefined));
+  }
+
+  async setChatArchived(chatId: number, archived: boolean): Promise<ChatActionResult> {
+    return nativeSetDialogFlags(chatId, new NativeDialogFlagsRecord(undefined, undefined, archived));
   }
 
   async forwardMessages(fromChatId: number, toChatId: number, messageIds: number[]): Promise<Array<NativeMessage | undefined>> {
-    const messages = await nativeForwardMessages(fromChatId, toChatId, messageIds);
-    return messages.map((message: NativeMessage | null | undefined): NativeMessage | undefined => message ?? undefined);
+    const messages: NativeMessage[] = await nativeForwardMessages(fromChatId, toChatId, messageIds);
+    return messages;
   }
 
   async downloadMediaFromMessage(chatId: number, messageId: number): Promise<string> {
-    return nativeDownloadMediaFromMessage(chatId, messageId);
+    const result: NativeMediaResult = await nativeDownloadMedia(chatId, messageId);
+    return result.localPath;
   }
 
   async downloadProfilePhoto(chatId: number): Promise<string> {
-    return nativeDownloadProfilePhoto(chatId);
+    const result: NativeMediaResult = await nativeDownloadProfilePhoto(chatId);
+    return result.localPath;
   }
 
   getProfilePhotoPathAndCount(chatId: number): ProfilePhotoPathAndCount {
@@ -180,12 +372,12 @@ class TelegramBridge {
   }
 
   async getChatPhotoThumb(chatId: number): Promise<number[] | undefined> {
-    const thumb = await nativeGetChatPhotoThumb(chatId);
+    const thumb: number[] | null | undefined = await nativeGetChatPhotoThumb(chatId);
     return thumb ?? undefined;
   }
 
   async getParticipants(chatId: number): Promise<NativeParticipant[]> {
-    return nativeGetParticipants(chatId);
+    return nativeGetParticipants(chatId, undefined);
   }
 
   async registerPush(tokenType: number, token: string): Promise<string> {
@@ -196,22 +388,97 @@ class TelegramBridge {
     return nativeUnregisterPush(tokenType, token);
   }
 
-  private toCacheSeenChatCallback(): (seenChat: NativeSeenChat) => Promise<void> {
-    return async (seenChat: NativeSeenChat) => {
-      await this.events.onSeenChatCached?.(seenChat);
-    };
+  private async replayMissedEvents(): Promise<void> {
+    const events: NativeEvent[] = await nativeGetEventsSince(this.lastEventSeq, 256);
+    Logger.info('TelegramBridge replayMissedEvents: count=' + events.length + ' since=' + this.lastEventSeq);
+    for (let i = 0; i < events.length; i++) {
+      await this.handleNativeEvent(events[i]);
+    }
   }
 
-  private toUpdateChatCallback(): UpdateChatCallback {
-    return async (err: Error | null, seenChat: NativeSeenChat, chat: NativeChat, messages: NativeMessage[]) => {
-      await this.events.onChatUpdated?.(seenChat, chat, messages);
-    };
+  private async handleNativeEvent(event: NativeEvent): Promise<void> {
+    Logger.debug('TelegramBridge native event kind=' + event.kind.toString() + ' seq=' + event.seq);
+    if (event.seq > this.lastEventSeq) {
+      this.lastEventSeq = event.seq;
+    }
+    if (event.peer) {
+      await this.events.onSeenChatCached?.(event.peer);
+    }
+    switch (event.kind) {
+      case NativeEventKind.DialogUpserted:
+        await this.handleDialogEvent(event);
+        break;
+      case NativeEventKind.MessagesUpserted:
+        await this.handleMessagesEvent(event);
+        break;
+      case NativeEventKind.MessageEdited:
+        if (event.message) {
+          await this.events.onEditedMessage?.(event.message);
+        }
+        break;
+      case NativeEventKind.MessagesDeleted:
+        if (event.deletedMessages) {
+          await this.events.onDeletedMessages?.(event.deletedMessages);
+        }
+        break;
+      case NativeEventKind.ReadStateChanged:
+        if (event.readState) {
+          await this.events.onReadState?.(event.readState);
+        }
+        break;
+      case NativeEventKind.UploadProgress:
+        if (event.progress) {
+          this.handleUploadProgress(event.progress);
+        }
+        break;
+      case NativeEventKind.ActionFailed:
+      case NativeEventKind.UnknownUpdate:
+        if (event.error) {
+          Logger.warn('TelegramBridge native event ' + event.kind.toString() + ': ' + event.error.message);
+        }
+        break;
+      case NativeEventKind.RuntimeState:
+      case NativeEventKind.PeerUpserted:
+      case NativeEventKind.DownloadProgress:
+        break;
+      default:
+        break;
+    }
   }
 
-  private toIncomingMessageCallback(): IncomingMessageCallback {
-    return async (err: Error | null, chat: NativeChat | undefined, message: NativeMessage) => {
-      await this.events.onIncomingMessage?.(chat, message);
-    };
+  private async handleDialogEvent(event: NativeEvent): Promise<void> {
+    if (!event.chat) {
+      return;
+    }
+    const messages: NativeMessage[] = event.messages ?? [];
+    Logger.info('TelegramBridge handleDialogEvent chatId=' + event.chat.chatId + ' messages=' + messages.length);
+    await this.events.onChatUpdated?.(event.peer ?? undefined, event.chat, messages);
+  }
+
+  private async handleMessagesEvent(event: NativeEvent): Promise<void> {
+    const messages: NativeMessage[] = event.messages ?? [];
+    Logger.info('TelegramBridge handleMessagesEvent messages=' + messages.length +
+      ' chatId=' + (event.chat ? event.chat.chatId : -1));
+    for (let i = 0; i < messages.length; i++) {
+      await this.events.onIncomingMessage?.(event.chat ?? undefined, messages[i]);
+    }
+  }
+
+  private handleUploadProgress(progress: NativeProgress): void {
+    const mediaIndex = progress.mediaIndex ?? 0;
+    for (let i = 0; i < this.uploadProgressCallbacks.length; i++) {
+      this.uploadProgressCallbacks[i](mediaIndex, progress.currentProgress);
+    }
+  }
+
+  private removeUploadProgressCallback(callback: UploadProgressCallback): void {
+    const nextCallbacks: UploadProgressCallback[] = [];
+    for (let i = 0; i < this.uploadProgressCallbacks.length; i++) {
+      if (this.uploadProgressCallbacks[i] !== callback) {
+        nextCallbacks.push(this.uploadProgressCallbacks[i]);
+      }
+    }
+    this.uploadProgressCallbacks = nextCallbacks;
   }
 }
 
@@ -229,15 +496,28 @@ export const getMe = () => telegramBridge.getMe();
 export const loadChatsWithOffset = (lastMessageIds: Record<string, number>) => telegramBridge.loadChatsWithOffset(lastMessageIds);
 export const loadHistoryMessages = (chatId: number, beforeMessageId?: number, limit?: number) =>
   telegramBridge.loadHistoryMessages(chatId, beforeMessageId, limit);
-export const syncCachesFromLocalDb = (packedChats: NativePackedChat[], chats: NativeChat[]) =>
-  telegramBridge.syncCachesFromLocalDb(packedChats, chats);
 export const sendMessage = (
   chatId: number,
   text: string,
   replyTo?: number,
-  medias?: string[],
-  onUploadProgress?: (mediaIndex: number, currentProgress: number) => void,
+  medias?: NativeMediaInput[],
+  onUploadProgress?: UploadProgressCallback,
 ) => telegramBridge.sendMessage(chatId, text, replyTo, medias, onUploadProgress);
+export const getContacts = () => telegramBridge.getContacts();
+export const resolvePeerByUsername = (username: string) => telegramBridge.resolvePeerByUsername(username);
+export const openChat = (chatId: number) => telegramBridge.openChat(chatId);
+export const searchKnownPeers = (query: string, limit?: number) => telegramBridge.searchKnownPeers(query, limit);
+export const searchMessages = (chatId: number, query: string, limit?: number, offsetId?: number) =>
+  telegramBridge.searchMessages(chatId, query, limit, offsetId);
+export const searchAllMessages = (query: string, limit?: number, offsetId?: number) =>
+  telegramBridge.searchAllMessages(query, limit, offsetId);
+export const editMessage = (chatId: number, messageId: number, text: string) =>
+  telegramBridge.editMessage(chatId, messageId, text);
+export const deleteMessages = (chatId: number, messageIds: number[]) => telegramBridge.deleteMessages(chatId, messageIds);
+export const markChatRead = (chatId: number) => telegramBridge.markChatRead(chatId);
+export const setChatPinned = (chatId: number, pinned: boolean) => telegramBridge.setChatPinned(chatId, pinned);
+export const setChatMuted = (chatId: number, muted: boolean) => telegramBridge.setChatMuted(chatId, muted);
+export const setChatArchived = (chatId: number, archived: boolean) => telegramBridge.setChatArchived(chatId, archived);
 export const forwardMessages = (fromChatId: number, toChatId: number, messageIds: number[]) =>
   telegramBridge.forwardMessages(fromChatId, toChatId, messageIds);
 export const downloadMediaFromMessage = (chatId: number, messageId: number) =>

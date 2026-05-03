@@ -1,0 +1,192 @@
+{
+  "enum": [
+    "enumeration",
+    "enumerations",
+    "const enum",
+    "enum value",
+    "enum member"
+  ],
+  "class": [
+    "classes",
+    "constructor",
+    "inheritance",
+    "property",
+    "properties",
+    "method",
+    "methods"
+  ],
+  "interface": [
+    "interfaces",
+    "structural typing"
+  ],
+  "generic": [
+    "generics",
+    "type parameter",
+    "generic constraint"
+  ],
+  "type-casting": [
+    "cast",
+    "type cast",
+    "as keyword",
+    "assertion",
+    "narrowing"
+  ],
+  "function": [
+    "functions",
+    "rest parameter",
+    "arrow function",
+    "callback"
+  ],
+  "collection": [
+    "array",
+    "set",
+    "map",
+    "collection types",
+    "container"
+  ],
+  "string": [
+    "strings",
+    "template string"
+  ],
+  "error-handling": [
+    "throw",
+    "try catch",
+    "error",
+    "exception"
+  ],
+  "json": [
+    "json parse",
+    "json stringify"
+  ],
+  "xml": [
+    "xml parsing",
+    "xml generation",
+    "xml conversion"
+  ],
+  "buffer": [
+    "arraybuffer",
+    "fastbuffer",
+    "uint8array"
+  ],
+  "collections": [
+    "@arkts.collections",
+    "array",
+    "map",
+    "set",
+    "typedarray",
+    "bitvector"
+  ],
+  "taskpool": [
+    "task pool",
+    "taskgroup",
+    "task group"
+  ],
+  "worker": [
+    "workers",
+    "mainthread",
+    "main thread",
+    "postmessage"
+  ],
+  "api-reference": [
+    "@kit.arkts",
+    "@ohos",
+    "导入模块",
+    "参数",
+    "返回值",
+    "错误码",
+    "系统能力"
+  ],
+  "sendable": [
+    "@sendable",
+    "sendable object",
+    "sendable class"
+  ],
+  "runtime": [
+    "dynamic import",
+    "lazy import",
+    "module side effects",
+    "native module"
+  ],
+  "toolchain": [
+    "es2abc",
+    "abc",
+    "bytecode",
+    "obfuscation",
+    "arkoptions"
+  ],
+  "migration": [
+    "typescript to arkts",
+    "swift to arkts",
+    "java to arkts"
+  ],
+  "validation": [
+    "snippet",
+    "compile",
+    "syntax check",
+    "run result",
+    "verify"
+  ],
+  "debugging": [
+    "debug",
+    "diagnostic",
+    "diagnostics",
+    "error message"
+  ],
+  "linter": [
+    "lint",
+    "rule",
+    "rules",
+    "constraint",
+    "constraints",
+    "限制",
+    "约束",
+    "规则"
+  ],
+  "var": [
+    "let instead of var",
+    "arkts-no-var",
+    "禁止 var",
+    "不能用 var",
+    "var 声明"
+  ],
+  "destructuring": [
+    "destructuring declaration",
+    "destructuring",
+    "arkts-no-destruct-decls",
+    "解构",
+    "解构声明",
+    "解构赋值"
+  ],
+  "object-literal": [
+    "object literal",
+    "arkts-no-untyped-obj-literals",
+    "arkts-no-obj-literals-as-types",
+    "对象字面量",
+    "无上下文对象字面量"
+  ],
+  "sendable-rule": [
+    "sendable constraint",
+    "sendable rule",
+    "共享约束",
+    "并发约束",
+    "sendable 字段"
+  ],
+  "typeof": [
+    "type query",
+    "typeof expression",
+    "forbid_type_query",
+    "type query fail",
+    "typeof"
+  ],
+  "delete": [
+    "forbid_delete",
+    "delete operator",
+    "delete 表达式",
+    "delete 操作符"
+  ],
+  "in-operator": [
+    "forbid_in",
+    "in operator",
+    "in 表达式"
+  ]
+}

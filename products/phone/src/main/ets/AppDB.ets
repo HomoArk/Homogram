@@ -1,10 +1,9 @@
 import sql from "@liushengyi/smartdb";
-import { chatDao, messageDao, packedChatDao, rawMessageDao, seenChatDao } from "@ohos/home";
 import relationalStore from "@ohos.data.relationalStore";
 import { Logger } from '@ohos/base';
 
 class AppDB {
-  static DB_VERSION = 15;
+  static DB_VERSION = 16;
   private static STORE_CONFIG: relationalStore.StoreConfig = {
     name: 'homo.db',
     securityLevel: relationalStore.SecurityLevel.S1,
@@ -18,7 +17,6 @@ class AppDB {
       .catch((err: Error) => {
         Logger.error(`initDb failed due to ${err.name} - ${err.message}`);
       })
-    // appDbOpenHelper.onUpgrade(sql.dbHelper.rdbStore, 0, 1); // force to delete and recreate tables, for debug purpose
   }
 }
 
@@ -28,35 +26,11 @@ class AppDbOpenHelper extends sql.DbOpenHelper {
   }
 
   async onCreate(db: relationalStore.RdbStore) {
-    //用户表
-    let promises = [
-      chatDao.createChatsTable(),
-      messageDao.createMessagesTable(),
-      packedChatDao.createPackedChatsTable(),
-      seenChatDao.createSeenChatsTable(),
-      rawMessageDao.createRawMessagesTable()
-    ];
-
-    await Promise.all(promises);
-    Logger.debug("onCreate all tables created")
+    Logger.debug("onCreate no app-owned Telegram cache tables to create")
   }
 
   async onUpgrade(db: relationalStore.RdbStore, oldVersion: number, newVersion: number) {
-    if (oldVersion < newVersion) {
-      Logger.debug("onUpgrade delete all tables");
-      // delete the old db
-      let promises = [
-        seenChatDao.deleteSeenChatsTable(),
-        packedChatDao.deletePackedChatsTable(),
-        rawMessageDao.deleteRawMessagesTable(),
-        messageDao.deleteMessagesTable(),
-        chatDao.deleteChatsTable(),
-      ];
-
-      await Promise.all(promises);
-      Logger.debug("onUpgrade all tables deleted");
-      this.onCreate(db);
-    }
+    Logger.debug(`onUpgrade oldVersion=${oldVersion}, newVersion=${newVersion}; Telegram cache is Rust-owned`)
   }
 }
 

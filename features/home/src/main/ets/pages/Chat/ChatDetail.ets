@@ -23,6 +23,7 @@ import { SeenChat } from '../../entities/SeenChat';
 import { HashMap } from '@kit.ArkTS';
 import { ChatDataSource } from '../../viewmodel/Chat/ChatDataSource';
 import { MessageDataSource } from '../../viewmodel/Message/MessageDataSource';
+import { ChatDetailMessageActions } from '../../viewmodel/Message/ChatDetailMessageActions';
 import { ChatType, loadHistoryMessages, forwardMessages, NativeMessage, NativeSeenChat } from '../../api';
 import { curves, LengthMetrics, LengthUnit, promptAction } from '@kit.ArkUI';
 
@@ -65,8 +66,9 @@ export struct ChatDetail {
   private length: number = 0;
   private chatType: ChatType = ChatType.User;
   private isGroupOrChannel: boolean = false;
+  private messageActions: ChatDetailMessageActions = new ChatDetailMessageActions();
 
-  @State messageDataSource: MessageDataSource = this.messagesOfChatMap.get(this.currentChatId);
+  @State messageDataSource: MessageDataSource = this.messagesOfChatMap.get(this.currentChatId) ?? new MessageDataSource();
 
   @Builder
   TitleBuilder() {
@@ -180,9 +182,11 @@ export struct ChatDetail {
             });
             return;
           }
-          const result = await forwardMessages(parseInt(this.currentChatId), this.me.chatId, [this.selectedMessageId]);
+          const result: Array<NativeMessage | undefined> =
+            await forwardMessages(parseInt(this.currentChatId), this.me.chatId, [this.selectedMessageId]);
           console.info(JSON.stringify(result));
-          let success = Array.isArray(result) && result.length >= 1 && result[0] && result[0].messageId > 0;
+          const forwardedMessage: NativeMessage | undefined = result.length >= 1 ? result[0] : undefined;
+          let success: boolean = forwardedMessage !== undefined && forwardedMessage.messageId > 0;
           this.getUIContext().getPromptAction().showToast({
             message: success ? $r("app.string.message_saved") : $r("app.string.save_message_failed"),
             duration: 2000,
@@ -195,13 +199,13 @@ export struct ChatDetail {
         startIcon: $r('sys.symbol.trash'),
         content: $r('app.string.delete_message')
       })
-        .onClick(() => {
-          this.getUIContext().getPromptAction().showToast({
-            message: $r("app.string.unsupported_functionality"),
-            duration: 2000,
-            showMode: promptAction.ToastShowMode.DEFAULT,
-            bottom: 100
-          });
+        .onClick(async () => {
+          this.length = await this.messageActions.deleteMessage(
+            parseInt(this.currentChatId),
+            this.selectedMessageId,
+            this.messageDataSource,
+            this.getUIContext().getPromptAction(),
+          );
         })
     }
   }
@@ -351,6 +355,13 @@ export struct ChatDetail {
 
   aboutToAppear(): void {
     // this.navTitleMode = NavigationTitleMode.Mini;
+    const dataSource = this.messagesOfChatMap.get(this.currentChatId);
+    if (dataSource) {
+      this.messageDataSource = dataSource;
+    } else {
+      this.messageDataSource = new MessageDataSource();
+      this.messagesOfChatMap.set(this.currentChatId, this.messageDataSource);
+    }
     let chat = this.chatDataSource.get(this.currentChatId);
     this.chatType = chat?.chatType || ChatType.User;
     this.isGroupOrChannel = this.chatType === ChatType.Group || this.chatType === ChatType.Channel;
@@ -366,6 +377,8 @@ export struct ChatDetail {
       }
     }
     this.length = this.messageDataSource?.totalCount() || 0;
+    this.messageActions.markChatRead(parseInt(this.currentChatId));
+    this.loadInitialMessagesIfNeeded();
     // this.messages = (this.currentChatPinned ? this.pinnedChatsMap :
     // this.chatsMap).get(this.currentChatId)?.sortedMessages || [];
   }
@@ -440,6 +453,33 @@ export struct ChatDetail {
       }
     } catch (error) {
       Logger.error('ChatDetail loadHistoryMessages: failed to load history: ' + (error as Error).message);
+    } finally {
+      this.isLoadingHistory = false;
+    }
+  }
+
+  private async loadInitialMessagesIfNeeded(): Promise<void> {
+    if (this.isLoadingHistory || this.messageDataSource.totalCount() > 0) {
+      return;
+    }
+
+    this.isLoadingHistory = true;
+    Logger.debug('ChatDetail loadInitialMessages: loading latest messages for chat ' + this.currentChatId);
+    try {
+      const chatId = parseInt(this.currentChatId);
+      const nativeMessages: NativeMessage[] = await loadHistoryMessages(chatId, undefined, 50);
+      const messages: Message[] = [];
+      for (let i = 0; i < nativeMessages.length; i++) {
+        messages.push(Message.fromNative(nativeMessages[i]));
+      }
+      this.messageDataSource.setMessages(messages);
+      this.length = this.messageDataSource.totalCount();
+      Logger.debug('ChatDetail loadInitialMessages: loaded ' + this.length + ' messages');
+      if (this.length > 0) {
+        this.messageListScroller.scrollToIndex(this.length - 1, false, ScrollAlign.END);
+      }
+    } catch (error) {
+      Logger.error('ChatDetail loadInitialMessages: failed to load latest messages: ' + (error as Error).message);
     } finally {
       this.isLoadingHistory = false;
     }

@@ -13,16 +13,16 @@
  * limitations under the License.
  */
 
-import { Adaptive, BaseConstants, BreakpointConstants, Logger, mapToRecord, Vibrator } from '@ohos/base';
+import { BaseConstants, BreakpointConstants, Logger, Vibrator } from '@ohos/base';
 import { ChatItem } from './ChatItem';
 import { HomeTopSearch } from '../common/HomeTopSearch';
 import { HomeConstants } from '../../constants/HomeConstants';
 import { deviceInfo } from '@kit.BasicServicesKit';
-import { ChatType, loadChatsWithOffset } from '../../api';
+import { ChatType } from '../../api';
 import { Chat } from '../../entities/Chat';
 import { ChatDataSource } from '../../viewmodel/Chat/ChatDataSource';
+import { ChatListActions } from '../../viewmodel/Chat/ChatListActions';
 import { curves } from '@kit.ArkUI';
-import { Home } from '../../api';
 
 @Component
 export struct ChatList {
@@ -42,6 +42,7 @@ export struct ChatList {
   private searchController: SearchController = new SearchController();
   private lastIndexInOneScreen: number = -1;
   private onScrollIndexCounter: number = 0;
+  private actions: ChatListActions = new ChatListActions();
 
   @Styles
   animationStyle() {
@@ -54,6 +55,42 @@ export struct ChatList {
   chatListAnimationStyle() {
     .animation({ curve: curves.springMotion(0.6, 0.8) })
     .transition(this.chatItemTransitionEffect)
+  }
+
+  @Builder
+  ChatContextMenu(chat: Chat) {
+    Menu() {
+      MenuItem({
+        startIcon: $r('app.media.ic_public_add_norm'),
+        content: chat.pinned ? 'Unpin' : 'Pin'
+      })
+        .onClick(() => {
+          this.actions.setPinned(chat, !chat.pinned, this.getUIContext().getPromptAction());
+        })
+      MenuItem({
+        startIcon: $r('app.media.ic_public_sound'),
+        content: chat.muted ? 'Unmute' : 'Mute'
+      })
+        .onClick(() => {
+          this.actions.setMuted(chat, !chat.muted, this.getUIContext().getPromptAction());
+        })
+      MenuItem({
+        startIcon: chat.archived ? $r('app.media.ic_public_refresh') : $r('app.media.ic_public_cloud_upload'),
+        content: chat.archived ? 'Unarchive' : 'Archive'
+      })
+        .onClick(() => {
+          this.actions.setArchived(chat, !chat.archived, this.getUIContext().getPromptAction());
+        })
+      if (chat.unreadCount > 0) {
+        MenuItem({
+          startIcon: $r('app.media.ic_public_email_send'),
+          content: 'Mark as read'
+        })
+          .onClick(() => {
+            this.actions.markRead(chat, this.getUIContext().getPromptAction());
+          })
+      }
+    }
   }
 
   build() {
@@ -174,6 +211,7 @@ export struct ChatList {
                   }
                 }
               })
+              .bindContextMenu(this.ChatContextMenu(item), ResponseType.LongPress)
               .animation({ curve: curves.springMotion(0.6, 0.8) })
           }
 
@@ -271,6 +309,7 @@ export struct ChatList {
       this.chatItemTransitionEffect = undefined;
     }
   }
+
 }
 
 

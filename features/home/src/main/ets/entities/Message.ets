@@ -1,5 +1,5 @@
 import sql from "@liushengyi/smartdb"
-import { MediaType, NativeMessage, NativeMessageEntity, MessageEntityType } from 'libhomogrape.so'
+import { MediaType, NativeMessage, NativeMessageEntity, MessageEntityType, NativeSendState } from 'libhomogrape.so'
 import { IComparable } from '@ohos/base'
 
 /**
@@ -89,6 +89,10 @@ export class Message implements NativeMessage, IComparable<Message> {
   text: string;
   @sql.SqlColumn(sql.ColumnType.INTEGER)
   mediaType: MediaType
+  @sql.SqlColumn(sql.ColumnType.BOOL)
+  deleted: boolean
+  @sql.SqlColumn(sql.ColumnType.INTEGER)
+  sendState: NativeSendState
   @sql.SqlColumn(sql.ColumnType.INTEGER)
   editTimestamp?: number
   @sql.SqlColumn(sql.ColumnType.INTEGER)
@@ -119,7 +123,8 @@ export class Message implements NativeMessage, IComparable<Message> {
 
   constructor(chatId: number, messageId: number, outgoing: boolean, pinned: boolean, senderId: number,
     senderName: string, timestamp: number, text: string, mediaType: MediaType, editTimestamp?: number,
-    groupedId?: number, replyToMessageId?: number, fmtEntities?: MessageEntity[], stickerInfo?: StickerInfo) {
+    groupedId?: number, replyToMessageId?: number, fmtEntities?: MessageEntity[], stickerInfo?: StickerInfo,
+    deleted: boolean = false, sendState: NativeSendState = NativeSendState.Sent) {
     this.chatId = chatId;
     this.messageId = messageId;
     this.outgoing = outgoing;
@@ -129,6 +134,8 @@ export class Message implements NativeMessage, IComparable<Message> {
     this.timestamp = timestamp;
     this.text = text;
     this.mediaType = mediaType;
+    this.deleted = deleted;
+    this.sendState = sendState;
     this.editTimestamp = editTimestamp || -1;
     this.groupedId = groupedId || -1;
     this.replyToMessageId = replyToMessageId || -1;
@@ -146,7 +153,7 @@ export class Message implements NativeMessage, IComparable<Message> {
     let fmtEntities: MessageEntity[] | undefined;
     if (nativeMessage.fmtEntities && nativeMessage.fmtEntities.length > 0) {
       console.warn(`[FMTENTITIES] fromNative: converting ${nativeMessage.fmtEntities.length} entities from NAPI, first entity raw: ${JSON.stringify(nativeMessage.fmtEntities[0])}`);
-      fmtEntities = nativeMessage.fmtEntities.map(e => MessageEntity.fromNative(e));
+      fmtEntities = nativeMessage.fmtEntities.map((e: NativeMessageEntity): MessageEntity => MessageEntity.fromNative(e));
       console.warn(`[FMTENTITIES] fromNative: first entity converted: ${JSON.stringify(fmtEntities ? fmtEntities[0] : null)}`);
     }
 
@@ -164,7 +171,9 @@ export class Message implements NativeMessage, IComparable<Message> {
       nativeMessage.groupedId,
       nativeMessage.replyToMessageId,
       fmtEntities,
-      nativeMessage.stickerInfo as StickerInfo | undefined
+      nativeMessage.stickerInfo as StickerInfo | undefined,
+      nativeMessage.deleted ?? false,
+      nativeMessage.sendState ?? NativeSendState.Sent
     );
 
     msg.viewCount = nativeMessage.viewCount ?? 0;

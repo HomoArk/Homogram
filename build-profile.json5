@@ -25,13 +25,13 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "storeFile": "./signing/keystore.p12",
-          "storePassword": "0000001DAF9C8162E04A0CBCD76D72CED2F9728E2F7A460578E6782C442D99B5C2E5B1A1D620BDE5E4DB9DCA14",
-          "keyAlias": "keystore",
-          "keyPassword": "0000001D961FAF5A8C4E304042DB9205FDDCDF9202D10A77E207AFEFD87AD0F159EDA9FAA8752640B4F67ED3DC",
+          "certpath": "C:\\Users\\Xiangyi Meng\\.ohos\\config\\default_Homogram_JTbs4x86p3nmMMk9woefn8fNkhX8n3IIGY53knPAS_g=.cer",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001AF273881FAEA80DAC656029AA9BAD365CC0A5B90D12DBADB9F98E172ABBB4AD597EDCA8D00E76",
+          "profile": "C:\\Users\\Xiangyi Meng\\.ohos\\config\\default_Homogram_JTbs4x86p3nmMMk9woefn8fNkhX8n3IIGY53knPAS_g=.p7b",
           "signAlg": "SHA256withECDSA",
-          "profile": "./signing/homogram_debug.p7b",
-          "certpath": "./signing/Homogram_Debug.cer"
+          "storeFile": "C:\\Users\\Xiangyi Meng\\.ohos\\config\\default_Homogram_JTbs4x86p3nmMMk9woefn8fNkhX8n3IIGY53knPAS_g=.p12",
+          "storePassword": "0000001A99645AF351F3D40A0FE6230BA9633EC1D39A5085AC5042F8511F9924C54B60F54E45ECDC8EF2"
         }
       }
     ]

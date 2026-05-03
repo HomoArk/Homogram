@@ -16,7 +16,7 @@
 import { BaseConstants } from '@ohos/base/src/main/ets/constants/BaseConstants';
 import { StandardIcon } from '@ohos/base/src/main/ets/views/image/StandardIcon';
 import { HomeConstants } from '../../constants/HomeConstants';
-import { NativeMessage, sendMessage } from '../../api'
+import { MediaType, NativeMediaInput, NativeMediaInputRecord, NativeMessage, sendMessage } from '../../api'
 import { Logger } from '@ohos/base';
 import { Chat } from '../../entities/Chat';
 import { Message } from '../../entities/Message';
@@ -265,13 +265,12 @@ export struct ChatDetailBottom {
       // send message
       Logger.debug("sendMessage: " + this.text + " to " + this.currentChatId);
       Logger.debug("sendMessage Medias: " + JSON.stringify(this.selectedMedias));
-      // const pureArray: string[] = [];
-      // this.selectedMedias?.forEach(x => pureArray.push(x));
+      const medias: NativeMediaInput[] | undefined = this.buildMediaInputs();
       sendMessage(
         parseInt(this.currentChatId),
         this.text,
         this.replyToMessageId,
-        undefined,
+        medias,
         this.updateProgress
       )
         .then((message: NativeMessage[]) => {
@@ -290,11 +289,26 @@ export struct ChatDetailBottom {
           Logger.error("sendMessage error: " + err.message);
         });
       this.text = "";
+      this.selectedMedias = [];
+      this.selectedMediaCount = 0;
+      this.isShowMediaSheet = false;
     }
   }
 
   async updateProgress(media_index: number, progress: number) {
     // TODO: implement update media sending progress
     Logger.debug("updateProgress: " + media_index + " " + progress);
+  }
+
+  private buildMediaInputs(): NativeMediaInput[] | undefined {
+    if (this.selectedMedias.length === 0) {
+      return undefined;
+    }
+    const medias: NativeMediaInput[] = [];
+    for (let i = 0; i < this.selectedMedias.length; i++) {
+      const caption = i === 0 ? this.text : undefined;
+      medias.push(new NativeMediaInputRecord(this.selectedMedias[i], MediaType.None, caption));
+    }
+    return medias;
   }
 }

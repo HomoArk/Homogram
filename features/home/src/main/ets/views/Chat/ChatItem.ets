@@ -88,6 +88,20 @@ export struct ChatItem {
             .fontColor(Color.Grey)
             .fontFamily(BaseConstants.FONT_FAMILY_NORMAL)
             .width($r('app.float.chat_list_time_width'))
+          if (this.hasUnread()) {
+            Text(this.unreadText())
+              .fontSize(BaseConstants.FONT_SIZE_TEN)
+              .fontColor(Color.White)
+              .textAlign(TextAlign.Center)
+              .minFontSize(8)
+              .maxLines(1)
+              .padding({ left: 6, right: 6 })
+              .height(20)
+              .constraintSize({ minWidth: 20 })
+              .borderRadius(10)
+              .backgroundColor(this.chatData?.muted ? Color.Grey : $r('sys.color.ohos_id_color_emphasize'))
+              .margin({ top: 6 })
+          }
         }
         .flexBasis(HomeConstants.FLEX_BASIS_AUTO)
         .margin({ left: $r('app.float.icon_margin_two'), right: $r('app.float.icon_margin_one') })
@@ -101,6 +115,18 @@ export struct ChatItem {
       bottom: HomeConstants.CHAT_LIST_ITEM_MARGIN,
     })
     .hoverEffect(HoverEffect.Highlight)
+  }
+
+  private hasUnread(): boolean {
+    return (this.chatData?.unreadCount ?? 0) > 0;
+  }
+
+  private unreadText(): string {
+    const count = this.chatData?.unreadCount ?? 0;
+    if (count > 99) {
+      return '99+';
+    }
+    return count.toString();
   }
 
   async aboutToAppear(): Promise<void> {

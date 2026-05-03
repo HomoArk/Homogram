@@ -14,12 +14,14 @@
  */
 
 import { BaseConstants, BreakpointConstants } from '@ohos/base';
+import { HomeConstants } from '../../constants/HomeConstants';
+import { SeenChat } from '../../entities/SeenChat';
 
 @Component
 export struct ContactsItem {
   @StorageProp('currentBreakpoint') currentBreakpoint: string = BreakpointConstants.BREAKPOINT_SM;
-  private name?: string;
-  private icon?: Resource;
+  private contact?: SeenChat;
+  private icon: Resource = HomeConstants.DEFAULT_AVATAR;
 
   build() {
     Flex({ alignItems: ItemAlign.Center, justifyContent: FlexAlign.SpaceBetween }) {
@@ -32,18 +34,38 @@ export struct ContactsItem {
       .margin({ left: $r('app.float.icon_margin_two'), right: $r('app.float.icon_margin_one') })
 
       Column() {
-        Text(this.name)
+        Text(this.contact?.fullName || this.contact?.firstName || '')
           .fontSize(BaseConstants.FONT_SIZE_SIXTEEN)
           .fontWeight(BaseConstants.FONT_WEIGHT_FIVE)
           .lineHeight($r('app.float.text_line_height_two'))
           .fontFamily(BaseConstants.FONT_FAMILY_MEDIUM)
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+        if (this.subtitle().length > 0) {
+          Text(this.subtitle())
+            .fontSize(BaseConstants.FONT_SIZE_TWELVE)
+            .fontColor(Color.Grey)
+            .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+        }
       }
       .flexShrink(BaseConstants.FLEX_SHRINK_ONE)
       .margin({ left: $r('app.float.icon_margin_one') })
 
       Blank()
     }
-    .height(BaseConstants.FULL_HEIGHT)
+    .height(64)
     .width(BaseConstants.FULL_WIDTH)
+    .hoverEffect(HoverEffect.Highlight)
+  }
+
+  private subtitle(): string {
+    if (this.contact?.username && this.contact.username.length > 0) {
+      return '@' + this.contact.username;
+    }
+    if (this.contact?.phone && this.contact.phone.length > 0) {
+      return this.contact.phone;
+    }
+    return '';
   }
 }

@@ -22,11 +22,9 @@ export class MessageDataSource implements IDataSourcePrefetching {
   }
 
   prefetch(index: number): void | Promise<void> {
-    throw new Error('Method not implemented.');
   }
 
   cancel?(index: number): void | Promise<void> {
-    throw new Error('Method not implemented.');
   }
 
   public totalCount(): number {
@@ -84,6 +82,14 @@ export class MessageDataSource implements IDataSourcePrefetching {
       this.notifyDataDelete(index);
     }
 
+  }
+
+  public deleteById(messageId: number): void {
+    const index = this.sortedMessages.indexOf(messageId);
+    if (index >= 0) {
+      this.sortedMessages.delete(messageId);
+      this.notifyDataDelete(index);
+    }
   }
 
   //
