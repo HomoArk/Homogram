@@ -22,6 +22,7 @@ import { ChatType } from '../../api';
 import { Chat } from '../../entities/Chat';
 import { ChatDataSource } from '../../viewmodel/Chat/ChatDataSource';
 import { ChatListActions } from '../../viewmodel/Chat/ChatListActions';
+import { ChatRowState } from '../../viewmodel/Chat/ChatRowState';
 import { curves } from '@kit.ArkUI';
 
 @Component
@@ -160,7 +161,7 @@ export struct ChatList {
             .width(BaseConstants.FULL_WIDTH)
         }
 
-        LazyForEach(this.chatDataSource, (item: Chat, index: number) => {
+        LazyForEach(this.chatDataSource, (item: ChatRowState, index: number) => {
           ListItem() {
             ChatItem({
               chatData: item,
@@ -211,7 +212,7 @@ export struct ChatList {
                   }
                 }
               })
-              .bindContextMenu(this.ChatContextMenu(item), ResponseType.LongPress)
+              .bindContextMenu(this.ChatContextMenu(item.toChat()), ResponseType.LongPress)
               .animation({ curve: curves.springMotion(0.6, 0.8) })
           }
 
@@ -226,7 +227,7 @@ export struct ChatList {
           // .animation(this.isShowSearchIcon ? { curve: curves.springMotion(0.6, 0.8) } : {})
 
           // .chatListAnimationStyle()
-        }, (item: Chat) => this.chatItemKey(item))
+        }, (item: ChatRowState) => item.chatId.toString())
 
         ListItem() {
           Row()
@@ -308,16 +309,6 @@ export struct ChatList {
     } else {
       this.chatItemTransitionEffect = undefined;
     }
-  }
-
-  private chatItemKey(item: Chat): string {
-    return item.chatId.toString() + ':' +
-      item.lastMessageId.toString() + ':' +
-      item.lastMessageTimestamp.toString() + ':' +
-      item.lastMessageSenderName + ':' +
-      item.lastMessageText + ':' +
-      item.unreadCount.toString() + ':' +
-      item.muted.toString();
   }
 
 }

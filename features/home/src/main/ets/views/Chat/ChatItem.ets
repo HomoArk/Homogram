@@ -16,11 +16,11 @@
 import { BaseConstants, BreakpointConstants, Logger } from '@ohos/base';
 import { HomeConstants } from '../../constants/HomeConstants';
 import { DateHelper } from '@ohos/base';
-import { Chat } from '../../entities/Chat';
 import { ChatType } from '../../api'
 import { HashMap } from '@kit.ArkTS';
 import { SeenChat } from '../../entities/SeenChat';
 import { getOrDownloadProfilePhoto, getThumbProfilePhotoPixelMap } from '../../utils';
+import { ChatRowState } from '../../viewmodel/Chat/ChatRowState';
 import {
   ChatPhotoNodeController,
   createChatPhotoNode,
@@ -37,7 +37,7 @@ export struct ChatItem {
   @State profilePhotoLoaded: boolean = false;
   @State profilePhotoLoadFailed: boolean = false;
   @State chatPhotoNodeController: ChatPhotoNodeController | undefined = undefined;
-  @Prop chatData: Chat = new Chat(0, ChatType.User, '', false, 0, '', '', 0, false, false);
+  @ObjectLink chatData: ChatRowState;
   @Prop isInTopicPage: boolean = false;
 
   build() {
@@ -52,21 +52,21 @@ export struct ChatItem {
       if (!this.isInTopicPage) {
         Flex({ direction: FlexDirection.Column, justifyContent: FlexAlign.Start, alignItems: ItemAlign.Start }) {
           // Column() {
-          Text(this.chatData?.name)
+          Text(this.chatData.name)
             .maxLines(HomeConstants.CHAT_LIST_NAME_MAX_LINE)
             .fontSize(BaseConstants.FONT_SIZE_SIXTEEN)
             .fontWeight(BaseConstants.FONT_WEIGHT_FIVE)
             .lineHeight($r('app.float.text_line_height_two'))
             .fontFamily(BaseConstants.FONT_FAMILY_MEDIUM)
-          if (this.chatData?.chatType === ChatType.Group) {
-            Text(this.chatData?.lastMessageSenderName)
+          if (this.chatData.chatType === ChatType.Group) {
+            Text(this.chatData.lastMessageSenderName)
               .maxLines(HomeConstants.CHAT_LIST_NAME_MAX_LINE)
               .fontSize(BaseConstants.FONT_SIZE_FIFTEEN)
               .fontWeight(BaseConstants.FONT_WEIGHT_FOUR)
               .lineHeight($r('app.float.text_line_height_one'))
               .fontFamily(BaseConstants.FONT_FAMILY_NORMAL)
           }
-          Text(this.chatData?.lastMessageText)
+          Text(this.chatData.lastMessageText)
             .maxLines(HomeConstants.CHAT_DETAIL_MAX_LINE)
             .textOverflow({ overflow: TextOverflow.Ellipsis })
             .fontSize(BaseConstants.FONT_SIZE_FOURTEEN)
@@ -82,7 +82,7 @@ export struct ChatItem {
 
         Blank()
         Column() {
-          Text(DateHelper.getParsedDateString(this.chatData?.lastMessageTimestamp))
+          Text(DateHelper.getParsedDateString(this.chatData.lastMessageTimestamp))
             .fontWeight(BaseConstants.FONT_WEIGHT_FOUR)
             .fontSize(BaseConstants.FONT_SIZE_TEN)
             .fontColor(Color.Grey)
@@ -99,7 +99,7 @@ export struct ChatItem {
               .height(20)
               .constraintSize({ minWidth: 20 })
               .borderRadius(10)
-              .backgroundColor(this.chatData?.muted ? Color.Grey : $r('sys.color.ohos_id_color_emphasize'))
+              .backgroundColor(this.chatData.muted ? Color.Grey : $r('sys.color.ohos_id_color_emphasize'))
               .margin({ top: 6 })
           }
         }
@@ -118,11 +118,11 @@ export struct ChatItem {
   }
 
   private hasUnread(): boolean {
-    return (this.chatData?.unreadCount ?? 0) > 0;
+    return this.chatData.unreadCount > 0;
   }
 
   private unreadText(): string {
-    const count = this.chatData?.unreadCount ?? 0;
+    const count = this.chatData.unreadCount;
     if (count > 99) {
       return '99+';
     }
@@ -130,15 +130,15 @@ export struct ChatItem {
   }
 
   async aboutToAppear(): Promise<void> {
-    let node = getChatPhotoNode(this.chatData?.chatId);
+    let node = getChatPhotoNode(this.chatData.chatId);
     if (node === undefined) {
-      this.profilePhotoPath = await getOrDownloadProfilePhoto(this.chatData?.chatId || 0);
+      this.profilePhotoPath = await getOrDownloadProfilePhoto(this.chatData.chatId);
       this.profilePhotoLoaded = true;
-      let thumb = await getThumbProfilePhotoPixelMap(this.seenChatsMap.get(this.chatData?.chatId.toString())?.photoThumb);
+      let thumb = await getThumbProfilePhotoPixelMap(this.seenChatsMap.get(this.chatData.chatId.toString())?.photoThumb);
       this.profilePhotoPixelMap = thumb;
       this.isPixelMapReady = true;
-      createChatPhotoNode(this.getUIContext(), this.chatData?.chatId, this.profilePhotoPath, this.profilePhotoPixelMap);
-      this.chatPhotoNodeController = getChatPhotoNode(this.chatData?.chatId);
+      createChatPhotoNode(this.getUIContext(), this.chatData.chatId, this.profilePhotoPath, this.profilePhotoPixelMap);
+      this.chatPhotoNodeController = getChatPhotoNode(this.chatData.chatId);
     } else {
       this.chatPhotoNodeController = node;
     }

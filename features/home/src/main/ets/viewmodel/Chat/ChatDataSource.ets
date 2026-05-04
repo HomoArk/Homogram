@@ -2,12 +2,13 @@ import { HashMap } from '@kit.ArkTS';
 import { Logger } from '@ohos/base';
 import { SortedHashMap } from '@ohos/base';
 import { Chat } from '../../entities/Chat';
+import { ChatRowState } from './ChatRowState';
 
 export class ChatDataSource implements IDataSource {
-  private pinnedChatsMap: HashMap<string, Chat> = new HashMap<string, Chat>();
-  private pinnedChatsArray: Chat[] =
+  private pinnedChatsMap: HashMap<string, ChatRowState> = new HashMap<string, ChatRowState>();
+  private pinnedChatsArray: ChatRowState[] =
     []; // instead using pinnedChatsMap.values() to iterate, we use this array to make it faster
-  private sortedUnpinnedChatsMap: SortedHashMap<string, Chat> = new SortedHashMap<string, Chat>();
+  private sortedUnpinnedChatsMap: SortedHashMap<string, ChatRowState> = new SortedHashMap<string, ChatRowState>();
   // private readonly fetchInProgress: HashSet<number> = new HashSet<number>();
   private listeners: DataChangeListener[] = [];
 
@@ -18,7 +19,7 @@ export class ChatDataSource implements IDataSource {
     return this.sortedUnpinnedChatsMap.length() + this.pinnedChatsMap.length;
   }
 
-  getData(index: number): Chat | undefined {
+  getData(index: number): ChatRowState | undefined {
     if (index < this.pinnedChatsMap.length) {
       return this.pinnedChatsArray[index];
     }
@@ -28,31 +29,31 @@ export class ChatDataSource implements IDataSource {
   get(chatId: string): Chat | undefined {
     // always check pinned chats first
     if (this.pinnedChatsMap.hasKey(chatId)) {
-      return this.pinnedChatsMap.get(chatId);
+      return this.pinnedChatsMap.get(chatId)?.toChat();
     }
-    return this.sortedUnpinnedChatsMap.get(chatId);
+    return this.sortedUnpinnedChatsMap.get(chatId)?.toChat();
   }
 
   // ArkTS doesn't support generator so we cannot merge the iterators into one
 
   pinnedChats(): IterableIterator<Chat> {
-    return this.pinnedChatsMap.values();
+    return this.rowsToChats(this.pinnedChatsArray).values();
   }
 
   unsortedUnpinnedChats(): IterableIterator<Chat> {
-    return this.sortedUnpinnedChatsMap.valuesIterator();
+    return this.rowsIteratorToChats(this.sortedUnpinnedChatsMap.valuesIterator()).values();
   }
 
   sortedUnpinnedChats(): IterableIterator<Chat> {
-    return this.sortedUnpinnedChatsMap.sortedValuesIterator();
+    return this.rowsIteratorToChats(this.sortedUnpinnedChatsMap.sortedValuesIterator()).values();
   }
 
   getPinnedChatsArray(): Chat[] {
-    return [...this.pinnedChatsArray];
+    return this.rowsToChats(this.pinnedChatsArray);
   }
 
   getSortedUnpinnedChatsArray(): Chat[] {
-    return this.sortedUnpinnedChatsMap.getSortedValues();
+    return this.rowsToChats(this.sortedUnpinnedChatsMap.getSortedValues());
   }
 
   add(chat: Chat): void {
@@ -68,28 +69,49 @@ export class ChatDataSource implements IDataSource {
 
     if (this.pinnedChatsMap.hasKey(key)) {
       const pinnedIndex = this.pinnedChatsArray.findIndex((value) => value.chatId.toString() === key);
+      const row = this.pinnedChatsMap.get(key);
       this.pinnedChatsMap.remove(key);
       if (pinnedIndex >= 0) {
         this.pinnedChatsArray.splice(pinnedIndex, 1);
-        this.notifyDataDelete(pinnedIndex);
+      }
+      if (row) {
+        row.applyChat(chat);
+        this.sortedUnpinnedChatsMap.set(key, row);
+        this.notifyDataReload();
+        return;
       }
     }
 
-    const update = this.sortedUnpinnedChatsMap.set(key, chat);
-    if (update.previousIndex >= 0) {
-      this.notifyDataReload();
+    const existingRow = this.sortedUnpinnedChatsMap.get(key);
+    if (existingRow) {
+      const oldLength = this.sortedUnpinnedChatsMap.length();
+      const previousIndex = this.sortedUnpinnedChatsMap.delete(key);
+      existingRow.applyChat(chat);
+      const update = this.sortedUnpinnedChatsMap.set(key, existingRow);
+      const newIndex = update.index + this.pinnedChatsArray.length;
+      if (previousIndex >= 0 && previousIndex !== update.index) {
+        this.notifyDataMove(previousIndex + this.pinnedChatsArray.length, newIndex);
+        this.notifyDataChange(newIndex);
+      } else if (oldLength === this.sortedUnpinnedChatsMap.length()) {
+        this.notifyDataChange(newIndex);
+      }
     } else {
+      const update = this.sortedUnpinnedChatsMap.set(key, new ChatRowState(chat));
       this.notifyDataAdd(update.index + this.pinnedChatsArray.length);
     }
   }
 
   addChatsFromPinnedAndUnpinnedArrays(pinnedChats: Chat[], unpinnedChats: Chat[]): void {
-    this.pinnedChatsArray = pinnedChats;
+    this.pinnedChatsArray = [];
+    this.pinnedChatsMap.clear();
+    this.sortedUnpinnedChatsMap.clear();
     for (let i = 0; i < pinnedChats.length; i++) {
-      this.pinnedChatsMap.set(pinnedChats[i].chatId.toString(), pinnedChats[i]);
+      const row = new ChatRowState(pinnedChats[i]);
+      this.pinnedChatsArray.push(row);
+      this.pinnedChatsMap.set(row.chatId.toString(), row);
     }
     for (let i = 0; i < unpinnedChats.length; i++) {
-      this.sortedUnpinnedChatsMap.set(unpinnedChats[i].chatId.toString(), unpinnedChats[i]);
+      this.sortedUnpinnedChatsMap.set(unpinnedChats[i].chatId.toString(), new ChatRowState(unpinnedChats[i]));
     }
     this.notifyDataReload();
   }
@@ -99,11 +121,12 @@ export class ChatDataSource implements IDataSource {
   }
 
   addAllPinned(chats: Chat[]): void {
-    this.pinnedChatsArray.push(...chats);
     let oldLength = this.pinnedChatsMap.length;
     for (let i = 0; i < chats.length; i++) {
-      this.pinnedChatsMap.set(chats[i].chatId.toString(),
-        chats[i]); // we cannot use setAll because it takes a HashMap but not an array
+      const row = new ChatRowState(chats[i]);
+      this.pinnedChatsArray.push(row);
+      this.pinnedChatsMap.set(row.chatId.toString(),
+        row); // we cannot use setAll because it takes a HashMap but not an array
       this.notifyDataAdd(oldLength + i);
     }
     // this.notifyDataReload(); // no need to notify data reload since we assume number of pinned chats is limited
@@ -111,7 +134,7 @@ export class ChatDataSource implements IDataSource {
 
   addAllUnpinned(chats: Chat[]): void {
     for (let i = 0; i < chats.length; i++) {
-      this.sortedUnpinnedChatsMap.set(chats[i].chatId.toString(), chats[i]);
+      this.sortedUnpinnedChatsMap.set(chats[i].chatId.toString(), new ChatRowState(chats[i]));
     }
     this.notifyDataReload();
   }
@@ -154,10 +177,11 @@ export class ChatDataSource implements IDataSource {
     this.sortedUnpinnedChatsMap.clear();
     for (const chat of chats) {
       if (chat.pinned) {
-        this.pinnedChatsArray.push(chat);
-        this.pinnedChatsMap.set(chat.chatId.toString(), chat);
+        const row = new ChatRowState(chat);
+        this.pinnedChatsArray.push(row);
+        this.pinnedChatsMap.set(chat.chatId.toString(), row);
       } else {
-        this.sortedUnpinnedChatsMap.set(chat.chatId.toString(), chat);
+        this.sortedUnpinnedChatsMap.set(chat.chatId.toString(), new ChatRowState(chat));
       }
     }
     this.notifyDataReload();
@@ -169,8 +193,7 @@ export class ChatDataSource implements IDataSource {
 
   // I don't think this method will be used but just in case we need it
   modifyAt(index: number, chat: Chat): void {
-    this.sortedUnpinnedChatsMap.set(chat.chatId.toString(), chat);
-    this.notifyDataChange(index);
+    this.upsert(chat);
   }
 
   registerDataChangeListener(listener: DataChangeListener): void {
@@ -233,21 +256,44 @@ export class ChatDataSource implements IDataSource {
     if (oldPinned) {
       const index = this.pinnedChatsArray.indexOf(oldPinned);
       if (index >= 0) {
-        this.pinnedChatsArray[index] = chat;
-        this.pinnedChatsMap.set(key, chat);
-        this.notifyDataReload();
+        oldPinned.applyChat(chat);
+        this.notifyDataChange(index);
       }
       return;
     }
 
     const unpinnedIndex = this.sortedUnpinnedChatsMap.indexOf(key);
     if (unpinnedIndex >= 0) {
+      const row = this.sortedUnpinnedChatsMap.get(key);
       this.sortedUnpinnedChatsMap.delete(key);
-      this.notifyDataDelete(unpinnedIndex + this.pinnedChatsArray.length);
+      if (row) {
+        row.applyChat(chat);
+        this.pinnedChatsArray.push(row);
+        this.pinnedChatsMap.set(key, row);
+        this.notifyDataReload();
+        return;
+      }
     }
 
-    this.pinnedChatsArray.push(chat);
-    this.pinnedChatsMap.set(key, chat);
+    const row = new ChatRowState(chat);
+    this.pinnedChatsArray.push(row);
+    this.pinnedChatsMap.set(key, row);
     this.notifyDataAdd(this.pinnedChatsArray.length - 1);
+  }
+
+  private rowsToChats(rows: ChatRowState[]): Chat[] {
+    const chats: Chat[] = [];
+    for (let i = 0; i < rows.length; i++) {
+      chats.push(rows[i].toChat());
+    }
+    return chats;
+  }
+
+  private rowsIteratorToChats(rows: IterableIterator<ChatRowState>): Chat[] {
+    const chats: Chat[] = [];
+    for (const row of rows) {
+      chats.push(row.toChat());
+    }
+    return chats;
   }
 }
