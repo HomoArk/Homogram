@@ -49,6 +49,7 @@ export class TelegramUpdateService {
     const mergedChat = this.chatWithAuthoritativeMessagePreview(chat, messages);
     Logger.info('TelegramUpdateService applyChatUpdated chatId=' + mergedChat.chatId + ' messages=' + messages.length +
       ' top=' + mergedChat.lastMessageId + '/' + mergedChat.lastMessageTimestamp +
+      ' unread=' + mergedChat.unreadCount +
       ' preview=' + mergedChat.lastMessageText);
     context.chatDataSource.upsert(mergedChat);
     if (messages.length > 0) {
