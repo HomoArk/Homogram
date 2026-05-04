@@ -5,13 +5,12 @@ import {
   NativeDeletedMessages,
   NativeDialog,
   NativeDialogPage,
+  NativeLoadSource,
   NativeMessage,
+  NativeMessageLoadType,
   NativeReadState,
   NativeSeenChat
 } from '../bridge/TelegramBridge';
-import { Chat } from '../entities/Chat';
-import { SeenChat } from '../entities/SeenChat';
-import { MessageDataSource } from '../viewmodel/Message/MessageDataSource';
 import { TelegramRuntimeContext, TelegramRuntimeState } from './TelegramRuntimeState';
 import { TelegramUpdateService } from './TelegramUpdateService';
 
@@ -32,6 +31,11 @@ export class TelegramRuntimeService {
         this.updateService.applySeenChatCached(seenChat),
       onChatUpdated: async (seenChat: NativeSeenChat | undefined, chat: NativeChat, messages: NativeMessage[]): Promise<void> =>
         this.updateService.applyChatUpdated(seenChat, chat, messages),
+      onDialogsLoaded: async (dialogs: NativeDialog[], messages: NativeMessage[], source: NativeLoadSource | undefined): Promise<void> =>
+        this.updateService.applyDialogsLoaded(dialogs, messages, source),
+      onMessagesLoaded: async (chat: NativeChat | undefined, messages: NativeMessage[], source: NativeLoadSource | undefined,
+        loadType: NativeMessageLoadType | undefined): Promise<void> =>
+        this.updateService.applyMessagesLoaded(chat, messages, source, loadType),
       onIncomingMessage: async (chat: NativeChat | undefined, message: NativeMessage): Promise<void> =>
         this.updateService.applyIncomingMessage(chat, message),
       onEditedMessage: async (message: NativeMessage): Promise<void> =>
@@ -65,7 +69,6 @@ export class TelegramRuntimeService {
 
     Logger.info('TelegramRuntimeService refreshChats start');
     await telegramBridge.startSync();
-    await this.loadNativeDialogs(context);
     Logger.info('TelegramRuntimeService refreshChats done');
   }
 
@@ -90,22 +93,9 @@ export class TelegramRuntimeService {
 
   private async loadNativeDialogs(context: TelegramRuntimeContext): Promise<void> {
     const page: NativeDialogPage = await telegramBridge.getDialogs(undefined, 100);
-    const chats: Chat[] = [];
     context.seenChatsMap.clear();
     Logger.info('TelegramRuntimeService loadNativeDialogs dialogs=' + page.dialogs.length);
-    for (let i = 0; i < page.dialogs.length; i++) {
-      const dialog: NativeDialog = page.dialogs[i];
-      const seenChat = SeenChat.fromNative(dialog.peer);
-      const chat = Chat.fromNative(dialog.chat);
-      context.seenChatsMap.set(seenChat.chatId.toString(), seenChat);
-      chats.push(chat);
-
-      if (!context.messagesOfChatMap.hasKey(chat.chatId.toString())) {
-        const dataSource = new MessageDataSource();
-        context.messagesOfChatMap.set(chat.chatId.toString(), dataSource);
-      }
-    }
-    context.chatDataSource.replaceAll(chats);
-    Logger.info('TelegramRuntimeService loadNativeDialogs applied chats=' + chats.length);
+    await this.updateService.applyDialogsLoaded(page.dialogs, [], NativeLoadSource.Cache);
+    Logger.info('TelegramRuntimeService loadNativeDialogs applied dialogs=' + page.dialogs.length);
   }
 }

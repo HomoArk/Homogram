@@ -8,14 +8,14 @@ import {
   forwardMessages as nativeForwardMessages,
   getChatPhotoThumb as nativeGetChatPhotoThumb,
   getContacts as nativeGetContacts,
-  getDialogs as nativeGetDialogs,
   getEventsSince as nativeGetEventsSince,
   getMe as nativeGetMe,
-  getMessages as nativeGetMessages,
   getParticipants as nativeGetParticipants,
   getProfilePhotoPathAndCount as nativeGetProfilePhotoPathAndCount,
   initialize as nativeInitialize,
   isLoggedIn as nativeIsLoggedIn,
+  loadDialogs as nativeLoadDialogs,
+  loadMessages as nativeLoadMessages,
   LoginState,
   markChatRead as nativeMarkChatRead,
   MediaType,
@@ -26,13 +26,19 @@ import {
   NativeDeletedMessages,
   NativeDialog,
   NativeDialogFlags,
+  NativeDialogLoadRequest,
+  NativeDialogLoadResult,
   NativeDialogPage,
   NativeEvent,
   NativeEventKind,
+  NativeLoadSource,
   NativeMediaInput,
   NativeMediaResult,
   NativeMessage,
   NativeMessageEntity,
+  NativeMessageLoadRequest,
+  NativeMessageLoadResult,
+  NativeMessageLoadType,
   NativeMessagePage,
   NativeParticipant,
   NativeParticipantRole,
@@ -78,13 +84,19 @@ export {
   NativeDeletedMessages,
   NativeDialog,
   NativeDialogFlags,
+  NativeDialogLoadRequest,
+  NativeDialogLoadResult,
   NativeDialogPage,
   NativeEvent,
   NativeEventKind,
+  NativeLoadSource,
   NativeMediaInput,
   NativeMediaResult,
   NativeMessage,
   NativeMessageEntity,
+  NativeMessageLoadRequest,
+  NativeMessageLoadResult,
+  NativeMessageLoadType,
   NativeMessagePage,
   NativeParticipant,
   NativeParticipantRole,
@@ -123,6 +135,9 @@ export interface ProfilePhotoPathAndCount {
 export interface TelegramBridgeEvents {
   onSeenChatCached?: (seenChat: NativeSeenChat) => void | Promise<void>;
   onChatUpdated?: (seenChat: NativeSeenChat | undefined, chat: NativeChat, messages: NativeMessage[]) => void | Promise<void>;
+  onDialogsLoaded?: (dialogs: NativeDialog[], messages: NativeMessage[], source: NativeLoadSource | undefined) => void | Promise<void>;
+  onMessagesLoaded?: (chat: NativeChat | undefined, messages: NativeMessage[], source: NativeLoadSource | undefined,
+    loadType: NativeMessageLoadType | undefined) => void | Promise<void>;
   onIncomingMessage?: (chat: NativeChat | undefined, message: NativeMessage) => void | Promise<void>;
   onEditedMessage?: (message: NativeMessage) => void | Promise<void>;
   onDeletedMessages?: (deletedMessages: NativeDeletedMessages) => void | Promise<void>;
@@ -172,6 +187,68 @@ class NativeDialogFlagsRecord implements NativeDialogFlags {
     this.pinned = pinned;
     this.muted = muted;
     this.archived = archived;
+  }
+}
+
+class NativeDialogLoadRequestRecord implements NativeDialogLoadRequest {
+  folderId?: number;
+  offset?: number;
+  count?: number;
+  source?: NativeLoadSource;
+
+  constructor(folderId?: number, offset?: number, count?: number, source?: NativeLoadSource) {
+    this.folderId = folderId;
+    this.offset = offset;
+    this.count = count;
+    this.source = source;
+  }
+}
+
+class NativeMessageLoadRequestRecord implements NativeMessageLoadRequest {
+  chatId: number;
+  threadId?: number;
+  count?: number;
+  maxId?: number;
+  offsetDate?: number;
+  loadType?: NativeMessageLoadType;
+  source?: NativeLoadSource;
+  lastMessageId?: number;
+  firstUnreadId?: number;
+
+  constructor(chatId: number, count?: number, maxId?: number, loadType?: NativeMessageLoadType,
+    source?: NativeLoadSource, threadId?: number, offsetDate?: number, lastMessageId?: number,
+    firstUnreadId?: number) {
+    this.chatId = chatId;
+    this.threadId = threadId;
+    this.count = count;
+    this.maxId = maxId;
+    this.offsetDate = offsetDate;
+    this.loadType = loadType;
+    this.source = source;
+    this.lastMessageId = lastMessageId;
+    this.firstUnreadId = firstUnreadId;
+  }
+}
+
+class NativeDialogPageRecord implements NativeDialogPage {
+  dialogs: NativeDialog[];
+  hasMore: boolean;
+
+  constructor(dialogs: NativeDialog[], hasMore: boolean) {
+    this.dialogs = dialogs;
+    this.hasMore = hasMore;
+  }
+}
+
+class NativeMessagePageRecord implements NativeMessagePage {
+  chatId: number;
+  messages: NativeMessage[];
+  hasMore: boolean;
+
+  constructor(chatId: number, messages: NativeMessage[], hasMore: boolean) {
+    this.chatId = chatId;
+    this.messages = messages;
+    this.hasMore = hasMore;
   }
 }
 
@@ -256,14 +333,18 @@ class TelegramBridge {
   }
 
   async getDialogs(offsetDate?: number, limit?: number): Promise<NativeDialogPage> {
-    const page: NativeDialogPage = await nativeGetDialogs(offsetDate, limit);
+    const result: NativeDialogLoadResult =
+      await nativeLoadDialogs(new NativeDialogLoadRequestRecord(0, undefined, limit, NativeLoadSource.Cache));
+    const page: NativeDialogPage = new NativeDialogPageRecord(result.dialogs, result.hasMore);
     Logger.info('TelegramBridge getDialogs: dialogs=' + page.dialogs.length + ' offsetDate=' +
       (offsetDate ?? -1) + ' limit=' + (limit ?? -1));
     return page;
   }
 
   async getMessages(chatId: number, beforeMessageId?: number, limit?: number): Promise<NativeMessagePage> {
-    const page: NativeMessagePage = await nativeGetMessages(chatId, beforeMessageId, limit);
+    const result: NativeMessageLoadResult = await nativeLoadMessages(new NativeMessageLoadRequestRecord(
+      chatId, limit, beforeMessageId, NativeMessageLoadType.Backward, NativeLoadSource.Cache));
+    const page: NativeMessagePage = new NativeMessagePageRecord(result.chatId, result.messages, result.hasMore);
     Logger.info('TelegramBridge getMessages: chatId=' + chatId + ' messages=' + page.messages.length +
       ' beforeMessageId=' + (beforeMessageId ?? -1) + ' limit=' + (limit ?? -1));
     return page;
@@ -275,8 +356,9 @@ class TelegramBridge {
   }
 
   async loadHistoryMessages(chatId: number, beforeMessageId?: number, limit?: number): Promise<NativeMessage[]> {
-    const page: NativeMessagePage = await nativeGetMessages(chatId, beforeMessageId, limit);
-    return page.messages;
+    const result: NativeMessageLoadResult = await nativeLoadMessages(new NativeMessageLoadRequestRecord(
+      chatId, limit, beforeMessageId, NativeMessageLoadType.Backward, NativeLoadSource.Cache));
+    return result.messages;
   }
 
   async sendMessage(
@@ -408,8 +490,14 @@ class TelegramBridge {
       case NativeEventKind.DialogUpserted:
         await this.handleDialogEvent(event);
         break;
+      case NativeEventKind.DialogsLoaded:
+        await this.handleDialogsLoadedEvent(event);
+        break;
       case NativeEventKind.MessagesUpserted:
         await this.handleMessagesEvent(event);
+        break;
+      case NativeEventKind.MessagesLoaded:
+        await this.handleMessagesLoadedEvent(event);
         break;
       case NativeEventKind.MessageEdited:
         if (event.message) {
@@ -455,13 +543,32 @@ class TelegramBridge {
     await this.events.onChatUpdated?.(event.peer ?? undefined, event.chat, messages);
   }
 
+  private async handleDialogsLoadedEvent(event: NativeEvent): Promise<void> {
+    const dialogs: NativeDialog[] = event.dialogs ?? [];
+    const messages: NativeMessage[] = event.messages ?? [];
+    Logger.info('TelegramBridge handleDialogsLoadedEvent dialogs=' + dialogs.length + ' messages=' + messages.length);
+    await this.events.onDialogsLoaded?.(dialogs, messages, event.source ?? undefined);
+  }
+
   private async handleMessagesEvent(event: NativeEvent): Promise<void> {
     const messages: NativeMessage[] = event.messages ?? [];
     Logger.info('TelegramBridge handleMessagesEvent messages=' + messages.length +
       ' chatId=' + (event.chat ? event.chat.chatId : -1));
-    for (let i = 0; i < messages.length; i++) {
-      await this.events.onIncomingMessage?.(event.chat ?? undefined, messages[i]);
+    if (event.chat) {
+      await this.events.onChatUpdated?.(event.peer ?? undefined, event.chat, messages);
+      return;
     }
+    for (let i = 0; i < messages.length; i++) {
+      await this.events.onIncomingMessage?.(undefined, messages[i]);
+    }
+  }
+
+  private async handleMessagesLoadedEvent(event: NativeEvent): Promise<void> {
+    const messages: NativeMessage[] = event.messages ?? [];
+    Logger.info('TelegramBridge handleMessagesLoadedEvent messages=' + messages.length +
+      ' chatId=' + (event.chat ? event.chat.chatId : -1));
+    await this.events.onMessagesLoaded?.(event.chat ?? undefined, messages, event.source ?? undefined,
+      event.loadType ?? undefined);
   }
 
   private handleUploadProgress(progress: NativeProgress): void {

@@ -20,7 +20,6 @@ import { AsyncCallback, BusinessError, commonEventManager, emitter } from '@kit.
 import { BaseConstants, BreakpointConstants, Logger, WindowUtil } from '@ohos/base/Index';
 import { deviceInfo } from '@kit.BasicServicesKit';
 import { appLifecycleService, EventConstants } from '@ohos/home';
-import AppDB from '../AppDB';
 import { ImageKnife } from '@ohos/imageknife';
 
 export default class EntryAbility extends UIAbility {
@@ -42,13 +41,6 @@ export default class EntryAbility extends UIAbility {
 
     this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
     ImageKnife.getInstance().initFileCache(this.context, 256, 256 * 1024 * 1024);
-
-    try {
-      AppDB.initDb(this.context);
-      Logger.info('Database initialized successfully');
-    } catch (err) {
-      Logger.error('Failed to init database. Cause: ' + err.name + '-' + err.message);
-    }
 
     appLifecycleService.registerDevice().catch((err: Error) => {
       Logger.error('Failed to register device. Cause: ' + err.name + '-' + err.message);

@@ -57,7 +57,6 @@ export struct ChatDetail {
   @State isLoadingHistory: boolean = false;
   @State selectedMessageId: number = -1;
   @State hasReachedSwipeBoundary: boolean = false;
-  @State swipeResetKey: number = 0;
 
   private shouldTransferToOnScrollIndex = false;
   private beforeFinalScrollIndex: number = -1;
@@ -67,6 +66,8 @@ export struct ChatDetail {
   private chatType: ChatType = ChatType.User;
   private isGroupOrChannel: boolean = false;
   private messageActions: ChatDetailMessageActions = new ChatDetailMessageActions();
+  private initialMessagesLoaded: boolean = false;
+  private historyPaginationArmed: boolean = false;
 
   @State messageDataSource: MessageDataSource = this.messagesOfChatMap.get(this.currentChatId) ?? new MessageDataSource();
 
@@ -238,7 +239,6 @@ export struct ChatDetail {
                 showUserName: this.shouldShowUserName(item, index),
               })
             }
-            .key(`${index}-${item.messageId}-${this.swipeResetKey}`)
               .swipeAction({
                 end: {
                   builder: this.QuickReplyIcon,
@@ -274,7 +274,7 @@ export struct ChatDetail {
                 top: index === 0 ? HomeConstants.NAV_TITLE_TOP_MARGIN_MINI : 0,
                 bottom: index === this.length - 1 ? HomeConstants.NAV_SIGNAL_BAR_HEIGHT : 0
               })
-          }, (item: Message, index: number) => index + JSON.stringify(item))
+          }, (item: Message) => `${item.chatId}-${item.messageId}`)
         }
         .height(BaseConstants.FULL_HEIGHT)
           .width(BaseConstants.FULL_WIDTH)
@@ -287,11 +287,19 @@ export struct ChatDetail {
               .animation({ curve: curves.springMotion(0.6, 0.8) });
           })
           .cachedCount(BaseConstants.LAZY_FOR_EACH_CACHED_COUNT)
+          .onTouch((event: TouchEvent) => {
+            if (this.initialMessagesLoaded && (event.type === TouchType.Down || event.type === TouchType.Move)) {
+              this.historyPaginationArmed = true;
+            }
+          })
           .onReachEnd(() => {
             this.isAtEnd = true;
           })
           .onReachStart(() => {
-            this.loadHistoryMessagesIfNeeded();
+            if (this.historyPaginationArmed) {
+              this.historyPaginationArmed = false;
+              this.loadHistoryMessagesIfNeeded();
+            }
           })
           .onDidScroll((scrollOffset: number, scrollState: ScrollState) => {
             // Logger.debug('ChatDetail onDidScroll scrollOffset: ' + scrollOffset + ' scrollState: ' + scrollState);
@@ -377,6 +385,8 @@ export struct ChatDetail {
       }
     }
     this.length = this.messageDataSource?.totalCount() || 0;
+    this.initialMessagesLoaded = this.length > 0;
+    this.historyPaginationArmed = false;
     this.messageActions.markChatRead(parseInt(this.currentChatId));
     this.loadInitialMessagesIfNeeded();
     // this.messages = (this.currentChatPinned ? this.pinnedChatsMap :
@@ -413,6 +423,11 @@ export struct ChatDetail {
   }
 
   private async loadHistoryMessagesIfNeeded(): Promise<void> {
+    if (!this.initialMessagesLoaded) {
+      Logger.debug('ChatDetail loadHistoryMessages: initial messages are not loaded');
+      return;
+    }
+
     if (this.isLoadingHistory) {
       Logger.debug('ChatDetail loadHistoryMessages: already loading, skip');
       return;
@@ -423,8 +438,7 @@ export struct ChatDetail {
       return;
     }
 
-    // 获取当前最早的消息 ID
-    const oldestMessage = this.messageDataSource.get(0);
+    const oldestMessage = this.messageDataSource.oldestMessage();
     const oldestMessageId = oldestMessage?.messageId;
 
     if (!oldestMessageId) {
@@ -444,10 +458,14 @@ export struct ChatDetail {
 
         // 将 NativeMessage 转换为 Message 并添加到数据源
         const messages = historyMessages.map((nativeMsg: NativeMessage) => Message.fromNative(nativeMsg));
-        this.messageDataSource.append(messages);
+        this.messageDataSource.upsertMany(messages);
 
         // 更新长度
         this.length = this.messageDataSource.totalCount();
+        const anchorIndex = this.messageDataSource.indexOf(oldestMessageId);
+        if (anchorIndex >= 0) {
+          this.messageListScroller.scrollToIndex(anchorIndex, false, ScrollAlign.START);
+        }
       } else {
         Logger.debug('ChatDetail loadHistoryMessages: no more history messages');
       }
@@ -459,7 +477,11 @@ export struct ChatDetail {
   }
 
   private async loadInitialMessagesIfNeeded(): Promise<void> {
-    if (this.isLoadingHistory || this.messageDataSource.totalCount() > 0) {
+    if (this.isLoadingHistory) {
+      return;
+    }
+    if (this.messageDataSource.totalCount() > 0) {
+      this.initialMessagesLoaded = true;
       return;
     }
 
@@ -472,8 +494,9 @@ export struct ChatDetail {
       for (let i = 0; i < nativeMessages.length; i++) {
         messages.push(Message.fromNative(nativeMessages[i]));
       }
-      this.messageDataSource.setMessages(messages);
+      this.messageDataSource.replaceSnapshot(messages);
       this.length = this.messageDataSource.totalCount();
+      this.initialMessagesLoaded = true;
       Logger.debug('ChatDetail loadInitialMessages: loaded ' + this.length + ' messages');
       if (this.length > 0) {
         this.messageListScroller.scrollToIndex(this.length - 1, false, ScrollAlign.END);
@@ -484,6 +507,7 @@ export struct ChatDetail {
       this.isLoadingHistory = false;
     }
   }
+
 }
 
 

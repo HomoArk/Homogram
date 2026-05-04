@@ -4,16 +4,11 @@ import { IDataSourcePrefetching } from '@kit.ArkUI';
 
 const nullMessage = new Message(0, 0, false, false, 0, '', 0, '', 0);
 
-// Caching logic:
-// 1. Always caching the latest 100 messages.
-// 2. When the message list is updated, the new messages will be added to the cache,
-// and the oldest messages will be removed.
-// 3. When user scrolls
 export class MessageDataSource implements IDataSourcePrefetching {
   public sortedMessages: SortedHashMap<number, Message> = new SortedHashMap<number, Message>();
   private listeners: DataChangeListener[] = [];
 
-  public setMessages(messages: Message[]): void {
+  public replaceSnapshot(messages: Message[]): void {
     this.sortedMessages.clear();
     for (let i = 0; i < messages.length; i++) {
       this.sortedMessages.set(messages[i].messageId, messages[i]);
@@ -33,12 +28,24 @@ export class MessageDataSource implements IDataSourcePrefetching {
 
   // to satisfy the interface
   public getData(index: number): Message {
-    return this.sortedMessages.getValueAt(index) || nullMessage;
+    return this.get(index);
   }
 
-  // to make names consistent
+  // ArkUI presents oldest-to-newest, while the backing store mirrors Telegram Android newest-first ordering.
   public get(index: number): Message {
-    return this.sortedMessages.getValueAt(index) || nullMessage;
+    return this.sortedMessages.getValueAt(this.toBackingIndex(index)) || nullMessage;
+  }
+
+  public oldestMessage(): Message | undefined {
+    const length = this.sortedMessages.length();
+    if (length <= 0) {
+      return undefined;
+    }
+    return this.sortedMessages.getValueAt(length - 1);
+  }
+
+  public newestMessage(): Message | undefined {
+    return this.sortedMessages.getValueAt(0);
   }
 
   public getMessageById(messageId: number): Message | undefined {
@@ -46,37 +53,46 @@ export class MessageDataSource implements IDataSourcePrefetching {
   }
 
   public getAll(): Message[] {
-    return this.sortedMessages.getSortedValues();
+    const values = this.sortedMessages.getSortedValues();
+    const result: Message[] = [];
+    for (let i = values.length - 1; i >= 0; i--) {
+      result.push(values[i]);
+    }
+    return result;
   }
 
   public indexOf(messageId: number): number {
-    return this.sortedMessages.indexOf(messageId);
+    return this.toVisualIndex(this.sortedMessages.indexOf(messageId), this.sortedMessages.length());
   }
 
-  public push(data: Message): void {
-    this.upsert(data);
-  }
-
-  public append(data: Message[]): void {
+  public upsertMany(data: Message[]): void {
+    if (data.length === 0) {
+      return;
+    }
     for (let i = 0; i < data.length; i++) {
       this.upsert(data[i]);
     }
   }
 
   public upsert(data: Message): void {
+    const oldLength = this.sortedMessages.length();
     const update = this.sortedMessages.set(data.messageId, data);
+    const newLength = this.sortedMessages.length();
+    const index = this.toVisualIndex(update.index, newLength);
     if (update.previousIndex >= 0 && update.previousIndex !== update.index) {
-      this.notifyDataMove(update.previousIndex, update.index);
-      this.notifyDataChange(update.index);
+      const previousIndex = this.toVisualIndex(update.previousIndex, oldLength);
+      this.notifyDataMove(previousIndex, index);
+      this.notifyDataChange(index);
     } else if (update.previousIndex >= 0) {
-      this.notifyDataChange(update.index);
+      this.notifyDataChange(index);
     } else {
-      this.notifyDataAdd(update.index);
+      this.notifyDataAdd(index);
     }
   }
 
   public delete(index: number): void {
-    let value = this.sortedMessages.getValueAt(index);
+    const backingIndex = this.toBackingIndex(index);
+    let value = this.sortedMessages.getValueAt(backingIndex);
     if (value) {
       this.sortedMessages.delete(value.messageId);
       this.notifyDataDelete(index);
@@ -85,8 +101,9 @@ export class MessageDataSource implements IDataSourcePrefetching {
   }
 
   public deleteById(messageId: number): void {
-    const index = this.sortedMessages.indexOf(messageId);
-    if (index >= 0) {
+    const backingIndex = this.sortedMessages.indexOf(messageId);
+    if (backingIndex >= 0) {
+      const index = this.toVisualIndex(backingIndex, this.sortedMessages.length());
       this.sortedMessages.delete(messageId);
       this.notifyDataDelete(index);
     }
@@ -106,11 +123,21 @@ export class MessageDataSource implements IDataSourcePrefetching {
   }
 
   public modify(index: number, data: Message): void {
-    let id = this.sortedMessages.getValueAt(index)?.messageId;
+    let id = this.get(index)?.messageId;
     if (id) {
-      this.sortedMessages.set(id, data);
-      this.notifyDataChange(index);
+      this.upsert(data);
     }
+  }
+
+  private toBackingIndex(visualIndex: number): number {
+    return this.sortedMessages.length() - 1 - visualIndex;
+  }
+
+  private toVisualIndex(backingIndex: number, length: number): number {
+    if (backingIndex < 0) {
+      return -1;
+    }
+    return length - 1 - backingIndex;
   }
 
   registerDataChangeListener(listener: DataChangeListener): void {

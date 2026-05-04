@@ -1,43 +1,42 @@
-import sql from "@liushengyi/smartdb"
-import { MediaType, NativeMessage, NativeMessageEntity, MessageEntityType, NativeSendState } from 'libhomogrape.so'
+﻿import { MediaType, NativeMessage, NativeMessageEntity, MessageEntityType, NativeSendState } from 'libhomogrape.so'
 import { IComparable } from '@ohos/base'
 
 /**
- * Sticker 信息
+ * Sticker 淇℃伅
  */
 export class StickerInfo {
-  emoji?: string;         // 关联的 emoji
-  isAnimated: boolean = false;    // 是否为动画 sticker (TGS)
-  isVideo: boolean = false;       // 是否为视频 sticker (WEBM)
-  mimeType?: string;      // MIME 类型
-  fileSize?: number;      // 文件大小
-  width?: number;         // 宽度
-  height?: number;        // 高度
+  emoji?: string;         // 鍏宠仈鐨?emoji
+  isAnimated: boolean = false;    // 鏄惁涓哄姩鐢?sticker (TGS)
+  isVideo: boolean = false;       // 鏄惁涓鸿棰?sticker (WEBM)
+  mimeType?: string;      // MIME 绫诲瀷
+  fileSize?: number;      // 鏂囦欢澶у皬
+  width?: number;         // 瀹藉害
+  height?: number;        // 楂樺害
 }
 
 /**
- * 通用媒体信息（Photo、Document、Video 等）
+ * 閫氱敤濯掍綋淇℃伅锛圥hoto銆丏ocument銆乂ideo 绛夛級
  */
 export class MediaInfo {
-  mimeType?: string;      // MIME 类型
-  fileName?: string;      // 原始文件名
-  fileSize?: number;      // 文件大小（字节）
-  width?: number;         // 宽度（图片/视频）
-  height?: number;        // 高度（图片/视频）
-  duration?: number;      // 时长（视频/音频，秒）
+  mimeType?: string;      // MIME 绫诲瀷
+  fileName?: string;      // 鍘熷鏂囦欢鍚?
+  fileSize?: number;      // 鏂囦欢澶у皬锛堝瓧鑺傦級
+  width?: number;         // 瀹藉害锛堝浘鐗?瑙嗛锛?
+  height?: number;        // 楂樺害锛堝浘鐗?瑙嗛锛?
+  duration?: number;      // 鏃堕暱锛堣棰?闊抽锛岀锛?
 }
 
 /**
- * 消息格式化实体（粗体、斜体、链接等）
+ * 娑堟伅鏍煎紡鍖栧疄浣擄紙绮椾綋銆佹枩浣撱€侀摼鎺ョ瓑锛?
  */
 export class MessageEntity implements NativeMessageEntity {
   entityType: MessageEntityType;
-  offset: number;       // UTF-16 偏移量
-  length: number;       // UTF-16 长度
-  url?: string;         // TextUrl 的链接
-  userId?: number;      // MentionName 的用户 ID
-  language?: string;    // Pre 的语言
-  customEmojiId?: number; // CustomEmoji 的 ID
+  offset: number;       // UTF-16 鍋忕Щ閲?
+  length: number;       // UTF-16 闀垮害
+  url?: string;         // TextUrl 鐨勯摼鎺?
+  userId?: number;      // MentionName 鐨勭敤鎴?ID
+  language?: string;    // Pre 鐨勮瑷€
+  customEmojiId?: number; // CustomEmoji 鐨?ID
 
   constructor(
     entityType: MessageEntityType,
@@ -71,54 +70,34 @@ export class MessageEntity implements NativeMessageEntity {
 }
 
 export class Message implements NativeMessage, IComparable<Message> {
-  @sql.SqlColumn(sql.ColumnType.INTEGER)
   chatId: number;
-  @sql.SqlColumn(sql.ColumnType.INTEGER)
   messageId: number;
-  @sql.SqlColumn(sql.ColumnType.BOOL)
   outgoing: boolean;
-  @sql.SqlColumn(sql.ColumnType.BOOL)
   pinned: boolean;
-  @sql.SqlColumn(sql.ColumnType.INTEGER)
   senderId: number;
-  @sql.SqlColumn(sql.ColumnType.TEXT)
   senderName: string;
-  @sql.SqlColumn(sql.ColumnType.INTEGER)
   timestamp: number;
-  @sql.SqlColumn(sql.ColumnType.TEXT)
   text: string;
-  @sql.SqlColumn(sql.ColumnType.INTEGER)
   mediaType: MediaType
-  @sql.SqlColumn(sql.ColumnType.BOOL)
   deleted: boolean
-  @sql.SqlColumn(sql.ColumnType.INTEGER)
   sendState: NativeSendState
-  @sql.SqlColumn(sql.ColumnType.INTEGER)
   editTimestamp?: number
-  @sql.SqlColumn(sql.ColumnType.INTEGER)
   groupedId?: number
-  @sql.SqlColumn(sql.ColumnType.INTEGER)
   replyToMessageId?: number
-  @sql.SqlColumn(sql.ColumnType.INTEGER)
   viewCount: number
-  @sql.SqlColumn(sql.ColumnType.INTEGER)
   forwardCount: number
-  @sql.SqlColumn(sql.ColumnType.INTEGER)
   replyCount: number
-  /// 消息格式化实体（粗体、斜体、链接等）- 存储为 JSON 字符串
-  @sql.SqlColumn(sql.ColumnType.TEXT)
+  /// 娑堟伅鏍煎紡鍖栧疄浣擄紙绮椾綋銆佹枩浣撱€侀摼鎺ョ瓑锛? 瀛樺偍涓?JSON 瀛楃涓?
   fmtEntitiesJson?: string
-  /// 运行时使用的格式化实体数组
+  /// 杩愯鏃朵娇鐢ㄧ殑鏍煎紡鍖栧疄浣撴暟缁?
   fmtEntities?: MessageEntity[]
-  /// Sticker 信息 - 存储为 JSON 字符串
-  @sql.SqlColumn(sql.ColumnType.TEXT)
+  /// Sticker 淇℃伅 - 瀛樺偍涓?JSON 瀛楃涓?
   stickerInfoJson?: string
-  /// 运行时使用的 Sticker 信息
+  /// 杩愯鏃朵娇鐢ㄧ殑 Sticker 淇℃伅
   stickerInfo?: StickerInfo
-  /// 通用媒体信息 - 存储为 JSON 字符串
-  @sql.SqlColumn(sql.ColumnType.TEXT)
+  /// 閫氱敤濯掍綋淇℃伅 - 瀛樺偍涓?JSON 瀛楃涓?
   mediaInfoJson?: string
-  /// 运行时使用的媒体信息
+  /// 杩愯鏃朵娇鐢ㄧ殑濯掍綋淇℃伅
   mediaInfo?: MediaInfo
 
   constructor(chatId: number, messageId: number, outgoing: boolean, pinned: boolean, senderId: number,
@@ -144,12 +123,12 @@ export class Message implements NativeMessage, IComparable<Message> {
     this.viewCount = 0;
     this.fmtEntities = fmtEntities;
     this.stickerInfo = stickerInfo;
-    // Note: JSON 序列化由 fromNative 统一处理，直接序列化 NAPI 原始对象
-    // 构造函数不再序列化，避免类实例序列化问题
+    // Note: JSON 搴忓垪鍖栫敱 fromNative 缁熶竴澶勭悊锛岀洿鎺ュ簭鍒楀寲 NAPI 鍘熷瀵硅薄
+    // 鏋勯€犲嚱鏁颁笉鍐嶅簭鍒楀寲锛岄伩鍏嶇被瀹炰緥搴忓垪鍖栭棶棰?
   }
 
   public static fromNative(nativeMessage: NativeMessage): Message {
-    // 转换格式化实体
+    // 杞崲鏍煎紡鍖栧疄浣?
     let fmtEntities: MessageEntity[] | undefined;
     if (nativeMessage.fmtEntities && nativeMessage.fmtEntities.length > 0) {
       console.warn(`[FMTENTITIES] fromNative: converting ${nativeMessage.fmtEntities.length} entities from NAPI, first entity raw: ${JSON.stringify(nativeMessage.fmtEntities[0])}`);
@@ -180,8 +159,8 @@ export class Message implements NativeMessage, IComparable<Message> {
     msg.forwardCount = nativeMessage.forwardCount ?? 0;
     msg.replyCount = nativeMessage.replyCount ?? 0;
 
-    // 直接序列化原始 NAPI 对象，避免类实例序列化问题
-    // 这样可以确保数据在数据库往返过程中不丢失
+    // 鐩存帴搴忓垪鍖栧師濮?NAPI 瀵硅薄锛岄伩鍏嶇被瀹炰緥搴忓垪鍖栭棶棰?
+    // 杩欐牱鍙互纭繚鏁版嵁鍦ㄦ暟鎹簱寰€杩旇繃绋嬩腑涓嶄涪澶?
     if (nativeMessage.fmtEntities && nativeMessage.fmtEntities.length > 0) {
       msg.fmtEntitiesJson = JSON.stringify(nativeMessage.fmtEntities);
       console.warn(`[FMTENTITIES] fromNative: serialized ${nativeMessage.fmtEntities.length} entities from NAPI`);
@@ -201,7 +180,7 @@ export class Message implements NativeMessage, IComparable<Message> {
   }
 
   /**
-   * 从数据库加载后，反序列化 fmtEntities、stickerInfo 和 mediaInfo
+   * 浠庢暟鎹簱鍔犺浇鍚庯紝鍙嶅簭鍒楀寲 fmtEntities銆乻tickerInfo 鍜?mediaInfo
    */
   public deserializeFmtEntities(): void {
     console.error(`============ [DESERIALIZE START] messageId=${this.messageId} ============`);
@@ -218,21 +197,21 @@ export class Message implements NativeMessage, IComparable<Message> {
     if (this.fmtEntitiesJson && this.fmtEntitiesJson.length > 0) {
       try {
         this.fmtEntities = JSON.parse(this.fmtEntitiesJson) as MessageEntity[];
-        console.error(`[DESERIALIZE] ✓ Successfully parsed ${this.fmtEntities.length} fmtEntities`);
+        console.error(`[DESERIALIZE] 鉁?Successfully parsed ${this.fmtEntities.length} fmtEntities`);
       } catch (e) {
-        console.error(`[DESERIALIZE] ✗ Failed to parse fmtEntitiesJson: ${e}`);
+        console.error(`[DESERIALIZE] 鉁?Failed to parse fmtEntitiesJson: ${e}`);
         this.fmtEntities = undefined;
       }
     } else {
-      console.error(`[DESERIALIZE] ✗ No fmtEntitiesJson to deserialize`);
+      console.error(`[DESERIALIZE] 鉁?No fmtEntitiesJson to deserialize`);
     }
 
     if (this.stickerInfoJson && this.stickerInfoJson.length > 0) {
       try {
         this.stickerInfo = JSON.parse(this.stickerInfoJson) as StickerInfo;
-        console.error(`[DESERIALIZE] ✓ Successfully parsed stickerInfo`);
+        console.error(`[DESERIALIZE] 鉁?Successfully parsed stickerInfo`);
       } catch (e) {
-        console.error(`[DESERIALIZE] ✗ Failed to parse stickerInfoJson: ${e}`);
+        console.error(`[DESERIALIZE] 鉁?Failed to parse stickerInfoJson: ${e}`);
         this.stickerInfo = undefined;
       }
     }
@@ -240,9 +219,9 @@ export class Message implements NativeMessage, IComparable<Message> {
     if (this.mediaInfoJson && this.mediaInfoJson.length > 0) {
       try {
         this.mediaInfo = JSON.parse(this.mediaInfoJson) as MediaInfo;
-        console.error(`[DESERIALIZE] ✓ Successfully parsed mediaInfo`);
+        console.error(`[DESERIALIZE] 鉁?Successfully parsed mediaInfo`);
       } catch (e) {
-        console.error(`[DESERIALIZE] ✗ Failed to parse mediaInfoJson: ${e}`);
+        console.error(`[DESERIALIZE] 鉁?Failed to parse mediaInfoJson: ${e}`);
         this.mediaInfo = undefined;
       }
     }
@@ -250,14 +229,14 @@ export class Message implements NativeMessage, IComparable<Message> {
   }
 
   /**
-   * 检查消息是否包含格式化内容
+   * 妫€鏌ユ秷鎭槸鍚﹀寘鍚牸寮忓寲鍐呭
    */
   public hasFormatting(): boolean {
     return this.fmtEntities !== undefined && this.fmtEntities.length > 0;
   }
 
   /**
-   * 获取指定类型的所有实体
+   * 鑾峰彇鎸囧畾绫诲瀷鐨勬墍鏈夊疄浣?
    */
   public getEntitiesByType(type: MessageEntityType): MessageEntity[] {
     if (!this.fmtEntities) return [];
@@ -265,6 +244,15 @@ export class Message implements NativeMessage, IComparable<Message> {
   }
 
   compareTo(other: Message): number {
-    return other.messageId - this.messageId;
+    if (this.messageId > 0 && other.messageId > 0 && this.messageId !== other.messageId) {
+      return this.messageId - other.messageId;
+    }
+    if (this.messageId < 0 && other.messageId < 0 && this.messageId !== other.messageId) {
+      return other.messageId - this.messageId;
+    }
+    if (this.timestamp !== other.timestamp) {
+      return this.timestamp - other.timestamp;
+    }
+    return this.messageId - other.messageId;
   }
 }

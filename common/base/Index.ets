@@ -24,11 +24,9 @@ export { KV } from "./src/main/ets/utils/KV/KV";
 
 export { DateHelper } from './src/main/ets/utils/DateHelper/DateHelper';
 
-export { Database } from './src/main/ets/utils/Database/Database';
-
 export { mapToRecord, delay, stringToBuffer, typedArrayToBuffer, escapeString } from './src/main/ets/utils/Helper'
 
-export { IComparable, SortedHashMap } from './src/main/ets/utils/SortedHashMap'
+export { IComparable, SortedHashMap } from './src/main/ets/utils/Containers/SortedHashMap'
 
 export { WindowUtil } from './src/main/ets/utils/WindowUtil';
 

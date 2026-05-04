@@ -138,7 +138,7 @@ export struct ReplyToPreview {
         const messageDataSource = this.messagesOfChatMap.get(this.currentChatId);
         if (messageDataSource) {
           const messages = historyMessages.map(nativeMsg => Message.fromNative(nativeMsg));
-          messageDataSource.append(messages);
+          messageDataSource.upsertMany(messages);
           
           // 閲嶆柊鑾峰彇琚洖澶嶇殑娑堟伅
           this.message = messageDataSource.getMessageById(this.replyToMessageId);

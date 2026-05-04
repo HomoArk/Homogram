@@ -226,7 +226,7 @@ export struct ChatList {
           // .animation(this.isShowSearchIcon ? { curve: curves.springMotion(0.6, 0.8) } : {})
 
           // .chatListAnimationStyle()
-        }, (item: Chat, index: number) => index + JSON.stringify(item))
+        }, (item: Chat) => this.chatItemKey(item))
 
         ListItem() {
           Row()
@@ -308,6 +308,16 @@ export struct ChatList {
     } else {
       this.chatItemTransitionEffect = undefined;
     }
+  }
+
+  private chatItemKey(item: Chat): string {
+    return item.chatId.toString() + ':' +
+      item.lastMessageId.toString() + ':' +
+      item.lastMessageTimestamp.toString() + ':' +
+      item.lastMessageSenderName + ':' +
+      item.lastMessageText + ':' +
+      item.unreadCount.toString() + ':' +
+      item.muted.toString();
   }
 
 }

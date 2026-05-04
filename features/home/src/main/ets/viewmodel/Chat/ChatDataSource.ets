@@ -76,11 +76,8 @@ export class ChatDataSource implements IDataSource {
     }
 
     const update = this.sortedUnpinnedChatsMap.set(key, chat);
-    if (update.previousIndex >= 0 && update.previousIndex !== update.index) {
-      this.notifyDataMove(update.previousIndex + this.pinnedChatsArray.length, update.index + this.pinnedChatsArray.length);
-      this.notifyDataChange(update.index + this.pinnedChatsArray.length);
-    } else if (update.previousIndex >= 0) {
-      this.notifyDataChange(update.index + this.pinnedChatsArray.length);
+    if (update.previousIndex >= 0) {
+      this.notifyDataReload();
     } else {
       this.notifyDataAdd(update.index + this.pinnedChatsArray.length);
     }
@@ -238,7 +235,7 @@ export class ChatDataSource implements IDataSource {
       if (index >= 0) {
         this.pinnedChatsArray[index] = chat;
         this.pinnedChatsMap.set(key, chat);
-        this.notifyDataChange(index);
+        this.notifyDataReload();
       }
       return;
     }

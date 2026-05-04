@@ -1,35 +1,20 @@
-﻿import sql from '@liushengyi/smartdb';
-import { Base64 } from '@ohos/base64';
+﻿import { Base64 } from '@ohos/base64';
 import { NativeSeenChat, ChatType } from '../api';
 
 export class SeenChat {
-  @sql.SqlColumn(sql.ColumnType.INTEGER)
   chatId: number;
-  @sql.SqlColumn(sql.ColumnType.INTEGER)
   chatType: ChatType;
-  @sql.SqlColumn(sql.ColumnType.TEXT)
   packedChat: string;
-  @sql.SqlColumn(sql.ColumnType.BOOL)
   isContact: boolean;
-  @sql.SqlColumn(sql.ColumnType.BOOL)
   isMutualContact: boolean;
-  @sql.SqlColumn(sql.ColumnType.TEXT)
   phone?: string | undefined;
-  @sql.SqlColumn(sql.ColumnType.TEXT)
   username?: string | undefined;
-  @sql.SqlColumn(sql.ColumnType.TEXT)
   photoThumb?: string | undefined;
-  @sql.SqlColumn(sql.ColumnType.TEXT)
   fullName: string;
-  @sql.SqlColumn(sql.ColumnType.TEXT)
   firstName: string;
-  @sql.SqlColumn(sql.ColumnType.TEXT)
   lastName?: string | undefined;
-  @sql.SqlColumn(sql.ColumnType.TEXT)
   bio?: string | undefined;
-  @sql.SqlColumn(sql.ColumnType.INTEGER)
   dateOfBirth?: number | undefined;
-  @sql.SqlColumn(sql.ColumnType.BOOL)
   forum: boolean;
 
   constructor(chatId: number, chatType: ChatType, packedChat: string, isContact: boolean, isMutualContact: boolean,

@@ -1,37 +1,21 @@
-﻿import sql from "@liushengyi/smartdb"
-import { NativeChat, ChatType } from '../api';
+﻿import { NativeChat, ChatType } from '../api';
 import { IComparable } from '@ohos/base'
 
 export class Chat implements NativeChat, IComparable<Chat> {
-  @sql.SqlColumn(sql.ColumnType.INTEGER)
   chatId: number;
-  @sql.SqlColumn(sql.ColumnType.INTEGER)
   chatType: ChatType;
-  @sql.SqlColumn(sql.ColumnType.TEXT)
   name: string;
-  @sql.SqlColumn(sql.ColumnType.BOOL)
   pinned: boolean;
-  @sql.SqlColumn(sql.ColumnType.INTEGER)
   unreadCount: number;
-  @sql.SqlColumn(sql.ColumnType.INTEGER)
   readInboxMaxId: number;
-  @sql.SqlColumn(sql.ColumnType.INTEGER)
   readOutboxMaxId: number;
-  @sql.SqlColumn(sql.ColumnType.BOOL)
   muted: boolean;
-  @sql.SqlColumn(sql.ColumnType.BOOL)
   archived: boolean;
-  @sql.SqlColumn(sql.ColumnType.TEXT)
   lastMessageSenderName: string;
-  @sql.SqlColumn(sql.ColumnType.INTEGER)
   lastMessageId: number;
-  @sql.SqlColumn(sql.ColumnType.TEXT)
   lastMessageText: string;
-  @sql.SqlColumn(sql.ColumnType.INTEGER)
   lastMessageTimestamp: number;
-  @sql.SqlColumn(sql.ColumnType.BOOL)
   megagroup: boolean;
-  @sql.SqlColumn(sql.ColumnType.BOOL)
   forum: boolean;
 
   constructor(chatId: number, chatType: ChatType, name: string, pinned: boolean, lastMessageId: number,
@@ -84,7 +68,10 @@ export class Chat implements NativeChat, IComparable<Chat> {
   }
 
   compareTo(other: Chat): number {
-    return this.lastMessageTimestamp - other.lastMessageTimestamp;
+    if (this.lastMessageTimestamp !== other.lastMessageTimestamp) {
+      return this.lastMessageTimestamp - other.lastMessageTimestamp;
+    }
+    return this.lastMessageId - other.lastMessageId;
   }
 }
 

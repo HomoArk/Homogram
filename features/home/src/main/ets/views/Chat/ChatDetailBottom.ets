@@ -18,7 +18,6 @@ import { StandardIcon } from '@ohos/base/src/main/ets/views/image/StandardIcon';
 import { HomeConstants } from '../../constants/HomeConstants';
 import { MediaType, NativeMediaInput, NativeMediaInputRecord, NativeMessage, sendMessage } from '../../api'
 import { Logger } from '@ohos/base';
-import { Chat } from '../../entities/Chat';
 import { Message } from '../../entities/Message';
 import { ChatDetailBottomPhotoPicker } from './ChatDetailBottomPhotoPicker';
 import { ChatDetailBottomMediaSheet } from './ChatDetailBottomMediaSheet';
@@ -274,16 +273,12 @@ export struct ChatDetailBottom {
         this.updateProgress
       )
         .then((message: NativeMessage[]) => {
-          Logger.debug("sendMessage success: " + message[0].text);
-          let chat = this.chatDataSource.get(this.currentChatId);
-          if (chat) {
-            this.messagesOfChatMap.get(this.currentChatId)?.push(Message.fromNative(message[0]));
-            chat.lastMessageId = message[0].messageId;
-            chat.lastMessageSenderName = message[0].senderName;
-            chat.lastMessageText = message[0].text;
-            chat.lastMessageTimestamp = message[0].timestamp;
-            this.chatDataSource.add(chat);
+          Logger.debug("sendMessage success: count=" + message.length);
+          const messages: Message[] = [];
+          for (let i = 0; i < message.length; i++) {
+            messages.push(Message.fromNative(message[i]));
           }
+          this.messagesOfChatMap.get(this.currentChatId)?.upsertMany(messages);
         })
         .catch((err: Error) => {
           Logger.error("sendMessage error: " + err.message);

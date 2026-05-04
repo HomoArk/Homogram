@@ -37,8 +37,8 @@ export struct ChatItem {
   @State profilePhotoLoaded: boolean = false;
   @State profilePhotoLoadFailed: boolean = false;
   @State chatPhotoNodeController: ChatPhotoNodeController | undefined = undefined;
-  private chatData?: Chat;
-  private isInTopicPage: boolean = false;
+  @Prop chatData: Chat = new Chat(0, ChatType.User, '', false, 0, '', '', 0, false, false);
+  @Prop isInTopicPage: boolean = false;
 
   build() {
     Flex({ alignItems: ItemAlign.Center }) {

@@ -26,6 +26,7 @@ This file applies to the `E:\code\Homogram` workspace.
 - Do not remove or rotate signing material unless explicitly asked.
 - Before building the HAP, rebuild the Rust library if native code or its ArkTS bindings changed.
 - Do not introduce too much defensive logic. Instead, think in-depth and design carefully to ensure the code quality and correctness in a structural way.
+- Correctness and readability take priority over preserving unused compatibility wrappers.
 
 ## Native Build Flow
 
