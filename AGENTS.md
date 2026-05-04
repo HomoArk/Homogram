@@ -27,6 +27,9 @@ This file applies to the `E:\code\Homogram` workspace.
 - Before building the HAP, rebuild the Rust library if native code or its ArkTS bindings changed.
 - Do not introduce too much defensive logic. Instead, think in-depth and design carefully to ensure the code quality and correctness in a structural way.
 - Correctness and readability take priority over preserving unused compatibility wrappers.
+- For ArkTS/ArkUI UI edits, use HDS controls from `@kit.UIDesignKit` instead of legacy ArkUI widgets whenever the current SDK exposes an HDS equivalent. Do not add new legacy widgets or leave touched legacy widgets in place when an HDS counterpart exists.
+- For tabs specifically, use `HdsTabs` and `HdsTabsController` instead of `Tabs` and `TabsController`.
+- If an HDS API exists only in a newer HarmonyOS SDK than this checkout targets, document the version mismatch and avoid adding uncompilable calls.
 
 ## Native Build Flow
 

@@ -6,6 +6,7 @@ import { ChatDetailBottomPhotoPicker } from './ChatDetailBottomPhotoPicker';
 import { HashMap } from '@kit.ArkTS';
 import { ChatDataSource } from '../../viewmodel/Chat/ChatDataSource';
 import { MessageDataSource } from '../../viewmodel/Message/MessageDataSource';
+import { HdsTabs, HdsTabsAttribute, HdsTabsController } from '@kit.UIDesignKit';
 
 @Entry
 @Component
@@ -34,8 +35,7 @@ export struct ChatDetailBottomMediaSheet {
   @Link selectedMedias: Array<string>;
   @Prop currentDetents: number;
   @Link shouldSendMessage: boolean;
-  private controller: TabsController = new TabsController();
-  private tabsWidth: number = 0;
+  private controller: HdsTabsController = new HdsTabsController();
 
   @Builder
   MediaBar() {
@@ -113,7 +113,7 @@ export struct ChatDetailBottomMediaSheet {
 
   build() {
     Flex({ direction: FlexDirection.Column }) {
-      Tabs({ barPosition: BarPosition.Start, controller: this.controller }) {
+      HdsTabs({ barPosition: BarPosition.Start, controller: this.controller }) {
         TabContent() {
           ChatDetailBottomPhotoPicker({
             selectedMediaCount: $selectedMediaCount,
@@ -132,10 +132,6 @@ export struct ChatDetailBottomMediaSheet {
           .backgroundColor(Color.Pink)
         })
       }
-      .onAreaChange((oldValue: Area, newValue: Area) => {
-        let width = Number.parseFloat(newValue.width.toString());
-        this.tabsWidth = Number.isNaN(width) ? 0 : width;
-      })
       .barWidth('100%')
       .barHeight(0)
       .width('100%')
@@ -151,18 +147,6 @@ export struct ChatDetailBottomMediaSheet {
         this.currentIndex = targetIndex;
         let targetIndexInfo = this.getTextInfo(targetIndex);
         this.startAnimateTo(this.animationDuration, targetIndexInfo.left, targetIndexInfo.width);
-      })
-      .onAnimationEnd((index: number, event: TabsAnimationEvent) => {
-        // 切换动画结束时触发该回调。下划线动画停止。
-        let currentIndicatorInfo = this.getCurrentIndicatorInfo(index, event);
-        this.startAnimateTo(0, currentIndicatorInfo.left, currentIndicatorInfo.width);
-      })
-      .onGestureSwipe((index: number, event: TabsAnimationEvent) => {
-        // 在页面跟手滑动过程中，逐帧触发该回调。
-        let currentIndicatorInfo = this.getCurrentIndicatorInfo(index, event);
-        this.currentIndex = currentIndicatorInfo.index;
-        this.indicatorLeftMargin = currentIndicatorInfo.left;
-        this.indicatorWidth = currentIndicatorInfo.width;
       })
 
       Column() {
@@ -200,23 +184,6 @@ export struct ChatDetailBottomMediaSheet {
   private getTextInfo(index: number): Record<string, number> {
     let modePosition: componentUtils.ComponentInfo = componentUtils.getRectangleById(index.toString());
     return { 'left': px2vp(modePosition.windowOffset.x), 'width': px2vp(modePosition.size.width) };
-  }
-
-  private getCurrentIndicatorInfo(index: number, event: TabsAnimationEvent): Record<string, number> {
-    let nextIndex = index;
-    if (index > 0 && event.currentOffset > 0) {
-      nextIndex--;
-    } else if (index < 3 && event.currentOffset < 0) {
-      nextIndex++;
-    }
-    let indexInfo = this.getTextInfo(index);
-    let nextIndexInfo = this.getTextInfo(nextIndex);
-    let swipeRatio = Math.abs(event.currentOffset / this.tabsWidth);
-    // 页面滑动超过一半，tabBar切换到下一页。
-    let currentIndex = swipeRatio > 0.5 ? nextIndex : index;
-    let currentLeft = indexInfo.left + (nextIndexInfo.left - indexInfo.left) * swipeRatio;
-    let currentWidth = indexInfo.width + (nextIndexInfo.width - indexInfo.width) * swipeRatio;
-    return { 'index': currentIndex, 'left': currentLeft, 'width': currentWidth };
   }
 
   private startAnimateTo(duration: number, leftMargin: number, width: number) {

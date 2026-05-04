@@ -35,6 +35,7 @@ import { HashMap } from '@kit.ArkTS';
 import { ChatDataSource } from '../viewmodel/Chat/ChatDataSource';
 import { MessageDataSource } from '../viewmodel/Message/MessageDataSource';
 import { curves, SymbolGlyphModifier } from '@kit.ArkUI';
+import { DividerMode, HdsTabs, HdsTabsAttribute, HdsTabsFloatingStyle, hdsMaterial } from '@kit.UIDesignKit';
 import { SeenChat } from '../entities/SeenChat';
 import { ForumTopicList } from './Chat/Group/ForumTopicList';
 import { ParticipantList } from './Chat/Group/ParticipantList';
@@ -107,6 +108,18 @@ export struct Index {
   ];
   private allowedCustomTransitionFromPageName: string[] = ['undefined'];
   private allowedCustomTransitionToPageName: string[] = ['TopicList'];
+  private readonly tabFloatingStyle: HdsTabsFloatingStyle = {
+    barWidth: {
+      smallWidth: '90%',
+      mediumWidth: '60%',
+      largeWidth: '48%'
+    },
+    barBottomMargin: 28,
+    systemMaterialEffect: {
+      materialType: hdsMaterial.MaterialType.ADAPTIVE,
+      materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
+    }
+  };
 
   watchCurrentBreakpoint() {
     if (this.currentBreakpoint === BreakpointConstants.BREAKPOINT_SM &&
@@ -192,7 +205,7 @@ export struct Index {
       .transition(TransitionEffect.move(TransitionEdge.TOP).animation({ curve: curves.springMotion(0.6, 0.8) }))
 
       Navigation(this.pageInfo) {
-        Tabs({
+        HdsTabs({
           barPosition: this.currentBreakpoint !== BreakpointConstants.BREAKPOINT_SM ? BarPosition.Start : BarPosition.End
         }) {
           TabContent() {
@@ -208,7 +221,6 @@ export struct Index {
             normal: new SymbolGlyphModifier($r('sys.symbol.message_on_message')),
             selected: new SymbolGlyphModifier($r('sys.symbol.message_on_message_fill')),
           }, HomeConstants.TAB_BAR_TEXTS[0]))
-          .expandSafeArea([SafeAreaType.SYSTEM])
           .padding({
             left: this.currentBreakpoint !== BreakpointConstants.BREAKPOINT_SM ? $r('app.float.bar_width') : 0
           })
@@ -235,14 +247,11 @@ export struct Index {
             selected: new SymbolGlyphModifier($r('sys.symbol.person_fill')),
           }, HomeConstants.TAB_BAR_TEXTS[2]))
         }
-        .expandSafeArea([SafeAreaType.SYSTEM])
         .scrollable(false)
         .vertical(this.currentBreakpoint !== BreakpointConstants.BREAKPOINT_SM)
-        .barWidth(this.currentBreakpoint !== BreakpointConstants.BREAKPOINT_SM ?
-          $r('app.float.bar_width') : BaseConstants.FULL_PERCENT)
         .barOverlap(true)
-        .barBackgroundColor(this.titleAndTabBarColor)
-        .barBackgroundBlurStyle(this.blurStyle)
+        .divider({ mode: DividerMode.NONE })
+        .barFloatingStyle(this.currentBreakpoint === BreakpointConstants.BREAKPOINT_SM ? this.tabFloatingStyle : undefined)
         .height(BaseConstants.FULL_HEIGHT)
         .width(BaseConstants.FULL_WIDTH)
         .onChange((index: number) => {
