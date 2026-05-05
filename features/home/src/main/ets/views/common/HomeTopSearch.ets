@@ -61,6 +61,9 @@ export struct HomeTopSearch {
           buttonSize: HdsHeaderMetrics.ROOT_ACTION_SIZE,
           iconSize: 22,
         })
+          .onClick(() => {
+            AppStorage.setOrCreate('homeNewMessageSheetVisible', true);
+          })
       }
       .width(96)
       .justifyContent(FlexAlign.End)

@@ -19,7 +19,6 @@ import {
   CurrentFeature,
   CurrentPage,
   Logger,
-  CircleButton,
   Vibrator,
 } from '@ohos/base';
 import ChatDetailNone from '../views/Chat/ChatDetailNone';
@@ -35,7 +34,13 @@ import { HashMap } from '@kit.ArkTS';
 import { ChatDataSource } from '../viewmodel/Chat/ChatDataSource';
 import { MessageDataSource } from '../viewmodel/Message/MessageDataSource';
 import { curves, SymbolGlyphModifier } from '@kit.ArkUI';
-import { DividerMode, HdsTabs, HdsTabsAttribute, HdsTabsFloatingStyle, hdsMaterial } from '@kit.UIDesignKit';
+import {
+  DividerMode,
+  HdsNavigation,
+  HdsTabs,
+  HdsTabsFloatingStyle,
+  hdsMaterial
+} from '@kit.UIDesignKit';
 import { SeenChat } from '../entities/SeenChat';
 import { ForumTopicList } from './Chat/Group/ForumTopicList';
 import { ParticipantList } from './Chat/Group/ParticipantList';
@@ -43,7 +48,14 @@ import { EventConstants } from '../constants/EventConstants';
 import { Contacts } from './Contacts';
 import { Me } from './Me';
 import { common } from '@kit.AbilityKit';
-import { HdsHeaderStyle } from '../views/common/HdsHeaderPrimitives';
+import {
+  HeaderGradientBlur,
+  HeaderSearchBar,
+  HeaderTitleCapsule,
+  HdsHeaderMetrics,
+  HdsHeaderStyle,
+  rootHeaderTopPadding
+} from '../views/common/HdsHeaderPrimitives';
 
 @Entry
 @Component
@@ -68,45 +80,13 @@ export struct Index {
   @State isSplitAppletScreen: boolean = BaseConstants.SPLIT_APPLET_SCREEN;
   @State isSplitDocumentScreen: boolean = BaseConstants.SPLIT_DOCUMENT_SCREEN;
   @State isLoggedIn: boolean = false;
-  @State blurStyle: BlurStyle = BlurStyle.Thin;
-  @State titleAndTabBarColor: Color | Resource = Color.Transparent;
-  @State isShowNewMessageSheet: boolean = false;
+  @StorageLink('homeNewMessageSheetVisible') isShowNewMessageSheet: boolean = false;
   @State isShowSearchIcon: boolean = false;
   @State isLoadingNewMessages: boolean = false;
   @State isShowChatListTopPadding: boolean = false;
-  @State titleMode: NavigationTitleMode = NavigationTitleMode.Free;
-  @State barStyle: BarStyle = BarStyle.STANDARD;
   @State isInChatDetailPage: boolean = false;
   @State isOnTop: boolean = true;
   @Provide isAppFirstLoad: boolean = true;
-  @State menuItems: Array<NavigationMenuItem> = [
-    {
-      value: 'menuItem1',
-      symbolIcon: new SymbolGlyphModifier($r('sys.symbol.ohos_folder_badge_plus')).fontColor([Color.Red, Color.Green])
-        .renderingStrategy(SymbolRenderingStrategy.MULTIPLE_COLOR),
-    },
-  ];
-  private searchIconTransitionEffect: TransitionEffect =
-    TransitionEffect.OPACITY.animation({
-      curve: curves.springMotion(0.6, 0.8)
-    })
-      .combine(TransitionEffect.scale({ x: 0, y: 0 }))
-      .combine(TransitionEffect.rotate({ angle: 90 }))
-      .combine(TransitionEffect.translate({ y: 150 }).animation({ curve: curves.springMotion() }))
-      .combine(TransitionEffect.move(TransitionEdge.END));
-  @State menuItems2: Array<NavigationMenuItem> = [
-    {
-      value: 'menuItem1',
-      symbolIcon: new SymbolGlyphModifier($r('sys.symbol.ohos_folder_badge_plus')).fontColor([Color.Red, Color.Green])
-        .renderingStrategy(SymbolRenderingStrategy.MULTIPLE_COLOR)
-    },
-    {
-      value: 'menuItem2',
-      symbolIcon: new SymbolGlyphModifier($r('sys.symbol.magnifyingglass_circle')).transition(
-        this.searchIconTransitionEffect
-      )
-    },
-  ];
   private allowedCustomTransitionFromPageName: string[] = ['undefined'];
   private allowedCustomTransitionToPageName: string[] = ['TopicList'];
   private readonly tabFloatingStyle: HdsTabsFloatingStyle = {
@@ -131,33 +111,47 @@ export struct Index {
   }
 
   @Builder
-  NavigationMenus() {
-    if (this.isShowSearchIcon) {
-      Row() {
-        CircleButton({
-          icon: $r('sys.symbol.magnifyingglass_circle'),
-        })
-      }
-      .alignItems(VerticalAlign.Bottom)
-      .margin({
-        top: HomeConstants.NAV_MENU_TOP_MARGIN,
-        left: HomeConstants.NAV_TITLE_LEFT_MARGIN,
-        right: HomeConstants.NAV_TITLE_LEFT_MARGIN
-      })
-      .transition(this.searchIconTransitionEffect)
-    }
-  }
-
-  @Builder
   NewMessageSheet() {
-    Column() {
-      Text('New Message')
-        .fontSize($r('sys.float.ohos_id_text_size_headline1'))
-        .fontWeight(700)
-        .lineHeight(41)
-        .fontColor($r('sys.color.font_primary'))
-        .margin({ top: 24, left: 24 })
+    Stack({ alignContent: Alignment.Top }) {
+      HeaderGradientBlur({
+        materialHeight: rootHeaderTopPadding(this.topRectHeight) + HdsHeaderMetrics.ROOT_ACTION_SIZE + 28
+      })
+
+      Column({ space: HdsHeaderMetrics.ROOT_SEARCH_TOP_MARGIN }) {
+        Row() {
+          Row()
+            .width(HdsHeaderMetrics.ROOT_ACTION_SIZE)
+            .height(HdsHeaderMetrics.ROOT_ACTION_SIZE)
+
+          HeaderTitleCapsule({
+            title: 'New Message',
+            capsuleWidth: BaseConstants.FULL_WIDTH,
+            capsuleHeight: HdsHeaderMetrics.ROOT_ACTION_SIZE,
+            titleFontSize: HdsHeaderMetrics.ROOT_TITLE_FONT_SIZE
+          })
+            .layoutWeight(BaseConstants.LAYOUT_WEIGHT_ONE)
+            .margin({ left: 8, right: 8 })
+
+          Row()
+            .width(HdsHeaderMetrics.ROOT_ACTION_SIZE)
+            .height(HdsHeaderMetrics.ROOT_ACTION_SIZE)
+        }
+        .width(BaseConstants.FULL_WIDTH)
+        .alignItems(VerticalAlign.Center)
+
+        HeaderSearchBar({ placeholder: 'Search contacts' })
+      }
+      .width(BaseConstants.FULL_WIDTH)
+      .padding({
+        left: HdsHeaderMetrics.ROOT_HORIZONTAL_PADDING,
+        right: HdsHeaderMetrics.ROOT_HORIZONTAL_PADDING,
+        top: rootHeaderTopPadding(this.topRectHeight),
+        bottom: 24
+      })
     }
+    .width(BaseConstants.FULL_WIDTH)
+    .height(BaseConstants.FULL_HEIGHT)
+    .backgroundColor($r('app.color.background_color_grey_two'))
   }
 
   @Builder
@@ -206,7 +200,7 @@ export struct Index {
       .zIndex(1)
       .transition(TransitionEffect.move(TransitionEdge.TOP).animation({ curve: curves.springMotion(0.6, 0.8) }))
 
-      Navigation(this.pageInfo) {
+      HdsNavigation(this.pageInfo) {
         HdsTabs({
           barPosition: this.currentBreakpoint !== BreakpointConstants.BREAKPOINT_SM ? BarPosition.Start : BarPosition.End
         }) {
@@ -271,19 +265,13 @@ export struct Index {
         dragBar: false,
         scrollSizeMode: ScrollSizeMode.CONTINUOUS,
         onDisappear: () => {
-          this.isShowNewMessageSheet = !this.isShowNewMessageSheet;
+          this.isShowNewMessageSheet = false;
         }
       })
-      .menus(this.isShowSearchIcon ? this.menuItems2 : this.menuItems)
       .hideTitleBar(true)
-      .titleMode(this.titleMode)
-      .title(HomeConstants.TAB_BAR_TEXTS[this.currentPageIndex], {
-        backgroundColor: this.titleAndTabBarColor,
-        backgroundBlurStyle: this.blurStyle,
-        barStyle: this.barStyle,
-      })
       .hideToolBar(true)
       .hideBackButton(true)
+      .ignoreLayoutSafeArea([LayoutSafeAreaType.SYSTEM], [LayoutSafeAreaEdge.TOP, LayoutSafeAreaEdge.BOTTOM])
       .navBarWidth(this.currentBreakpoint === BreakpointConstants.BREAKPOINT_XL ?
         HomeConstants.NAVIGATION_NAV_BAR_WIDTH_XL :
         (this.currentBreakpoint === BreakpointConstants.BREAKPOINT_LG ?
@@ -319,7 +307,6 @@ export struct Index {
       .transition(TransitionEffect.move(TransitionEdge.TOP).animation({ curve: curves.springMotion(0.6, 0.8) }))
       .onNavBarStateChange((isVisible: boolean) => {
         this.isOnTop = isVisible;
-        this.titleMode = isVisible ? NavigationTitleMode.Free : NavigationTitleMode.Mini;
       })
       .customNavContentTransition((from: NavContentInfo, to: NavContentInfo) => {
         if ((!from || !to) || (!from.name || !to.name)) {
