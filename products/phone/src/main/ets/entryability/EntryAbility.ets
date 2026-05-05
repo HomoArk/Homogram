@@ -19,7 +19,7 @@ import { display, window } from '@kit.ArkUI';
 import { AsyncCallback, BusinessError, commonEventManager, emitter } from '@kit.BasicServicesKit';
 import { BaseConstants, BreakpointConstants, Logger, WindowUtil } from '@ohos/base/Index';
 import { deviceInfo } from '@kit.BasicServicesKit';
-import { appLifecycleService, EventConstants } from '@ohos/home';
+import { appLifecycleService, applyTelegramFixtureModeFromUri, EventConstants, isTelegramFixtureMode } from '@ohos/home';
 import { ImageKnife } from '@ohos/imageknife';
 
 export default class EntryAbility extends UIAbility {
@@ -38,6 +38,7 @@ export default class EntryAbility extends UIAbility {
     if (want?.uri) {
       Logger.info(`Deep Linking onCreate - URI: ${want.uri}`);
     }
+    this.applyTestModeFromWant(want);
 
     this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
     ImageKnife.getInstance().initFileCache(this.context, 256, 256 * 1024 * 1024);
@@ -61,6 +62,7 @@ export default class EntryAbility extends UIAbility {
     if (want?.uri) {
       Logger.info(`Deep Linking onNewWant - URI: ${want.uri}`);
     }
+    this.applyTestModeFromWant(want);
   }
 
   async onWindowStageCreate(windowStage: window.WindowStage): Promise<void> {
@@ -71,6 +73,8 @@ export default class EntryAbility extends UIAbility {
         return;
       }
       this.windowObj = data;
+      this.applyTranslucentNavigationBar(data);
+      this.applyFixtureWindowPolicy(data);
       const windowWidth = this.windowObj.getWindowProperties().windowRect.width;
       const windowHeight = this.windowObj.getWindowProperties().windowRect.height;
       this.updateWidthBp(windowWidth);
@@ -95,19 +99,14 @@ export default class EntryAbility extends UIAbility {
         hilog.error(0x0000, 'EntryAbility', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err) ?? '');
         return;
       }
-      let type = window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR;
-      let avoidArea = this.windowObj?.getWindowAvoidArea(type);
-      AppStorage.setOrCreate('bottomRectHeight', avoidArea?.bottomRect.height);
-
-      type = window.AvoidAreaType.TYPE_SYSTEM;
-      avoidArea = this.windowObj?.getWindowAvoidArea(type);
-      AppStorage.setOrCreate('topRectHeight', avoidArea?.topRect.height);
+      this.updateNavigationIndicatorHeight();
+      this.updateTopSystemAvoidHeight();
 
       this.windowObj?.on('avoidAreaChange', (areaData) => {
         if (areaData.type === window.AvoidAreaType.TYPE_SYSTEM) {
-          AppStorage.setOrCreate('topRectHeight', areaData.area.topRect.height);
+          AppStorage.setOrCreate('topRectHeight', this.pxToVp(areaData.area.topRect.height));
         } else if (areaData.type === window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR) {
-          AppStorage.setOrCreate('bottomRectHeight', areaData.area.bottomRect.height);
+          AppStorage.setOrCreate('bottomRectHeight', this.pxToVp(areaData.area.bottomRect.height));
         }
       });
       hilog.info(0x0000, 'EntryAbility', 'Succeeded in loading the content. Data: %{public}s', JSON.stringify(data) ?? '');
@@ -168,6 +167,61 @@ export default class EntryAbility extends UIAbility {
       widthBp = BreakpointConstants.BREAKPOINT_XL;
     }
     AppStorage.setOrCreate('currentBreakpoint', widthBp);
+  }
+
+  private applyTestModeFromWant(want?: Want): void {
+    if (applyTelegramFixtureModeFromUri(want?.uri)) {
+      Logger.info('Telegram fixture mode enabled from launch URI');
+    }
+  }
+
+  private applyTranslucentNavigationBar(windowObj: window.Window): void {
+    windowObj.setWindowLayoutFullScreen(true).catch((err: BusinessError<void>) => {
+      Logger.error('Failed to make window layout immersive. Cause: ' + JSON.stringify(err));
+    });
+
+    windowObj.setWindowSystemBarProperties({
+      statusBarColor: '#00000000',
+      navigationBarColor: '#00000000',
+      navigationBarContentColor: '#66000000',
+      isNavigationBarLightIcon: false,
+      enableNavigationBarAnimation: false
+    }).catch((err: BusinessError<void>) => {
+      Logger.error('Failed to set translucent navigation bar. Cause: ' + JSON.stringify(err));
+    });
+
+    windowObj.setSpecificSystemBarEnabled('navigationIndicator', true, false).catch((err: BusinessError<void>) => {
+      Logger.error('Failed to enable navigation indicator. Cause: ' + JSON.stringify(err));
+    });
+  }
+
+  private applyFixtureWindowPolicy(windowObj: window.Window): void {
+    if (!isTelegramFixtureMode()) {
+      return;
+    }
+
+    windowObj.setWindowKeepScreenOn(true).catch((err: BusinessError<void>) => {
+      Logger.error('Failed to keep the UITest window awake. Cause: ' + JSON.stringify(err));
+    });
+  }
+
+  private updateNavigationIndicatorHeight(): void {
+    const avoidArea = this.windowObj?.getWindowAvoidArea(window.AvoidAreaType.TYPE_NAVIGATION_INDICATOR);
+    AppStorage.setOrCreate('bottomRectHeight', this.pxToVp(avoidArea?.bottomRect.height));
+  }
+
+  private updateTopSystemAvoidHeight(): void {
+    const avoidArea = this.windowObj?.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM);
+    AppStorage.setOrCreate('topRectHeight', this.pxToVp(avoidArea?.topRect.height));
+  }
+
+  private pxToVp(value?: number): number {
+    if (value === undefined) {
+      return 0;
+    }
+
+    const density = display.getDefaultDisplaySync().densityPixels;
+    return density > 0 ? value / density : value;
   }
 
   private updateHeightBp(windowWidth: number, windowHeight: number): void {

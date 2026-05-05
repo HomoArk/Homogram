@@ -31,6 +31,7 @@ export struct VerifyCode {
             .height(256)
           Text($r('app.string.login_code_hint')).margin({ top: 20 })
           TextInput({ placeholder: $r('app.string.login_code_placeholder'), text: this.code })
+            .id('hg-login-code-input')
             .type(InputType.Number)
             .margin({ top: 20 })
             .onChange((value) => {
@@ -44,6 +45,7 @@ export struct VerifyCode {
             .textAlign(TextAlign.Center)
 
           Button($r('app.string.login_sign_in')).width(150).margin({ top: 20 })
+            .id('hg-login-code-submit')
             .enabled(!this.isLoading)
             .onClick(async () => {
             if (this.code.length == 0) {

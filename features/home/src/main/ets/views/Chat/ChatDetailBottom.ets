@@ -25,6 +25,7 @@ import { curves } from '@kit.ArkUI';
 import { HashMap } from '@kit.ArkTS';
 import { ChatDataSource } from '../../viewmodel/Chat/ChatDataSource';
 import { MessageDataSource } from '../../viewmodel/Message/MessageDataSource';
+import { HdsHeaderMetrics, HdsHeaderStyle } from '../common/HdsHeaderPrimitives';
 
 const MAX_BLUR_RADIUS = 20;
 
@@ -69,6 +70,7 @@ export struct ChatDetailBottom {
           .renderingStrategy(SymbolRenderingStrategy.SINGLE)
           .fontColor([$r('sys.color.ohos_id_color_text_primary')])
       }
+        .id('hg-composer-send-button')
         .backgroundColor(Color.Transparent)
         .width(36)
         .height(36)
@@ -158,7 +160,9 @@ export struct ChatDetailBottom {
         TextArea({
           text: this.text,
         })
-          .opacity(0.5)
+          .id('hg-composer-input')
+          .opacity(1)
+          .backgroundColor(Color.Transparent)
           .borderRadius(HomeConstants.CHAT_DETAIL_BOTTOM_TEXT_RADIUS)
           .flexGrow(BaseConstants.FLEX_GROW_ONE)
           .padding({ right: $r('app.float.chat_detail_bottom_text_padding') })
@@ -175,7 +179,7 @@ export struct ChatDetailBottom {
                 Logger.error("sendMessage error: " + e.message);
               }
             }
-          })
+        })
       }
       .flexBasis(HomeConstants.FLEX_BASIS_AUTO)
 
@@ -209,6 +213,16 @@ export struct ChatDetailBottom {
         })
       }
     }
+    .width(BaseConstants.FULL_WIDTH)
+    .height(52)
+    .padding({ left: 6, right: 6 })
+    .borderRadius(28)
+    .backgroundBlurStyle(HdsHeaderStyle.FLOATING_BLUR_STYLE)
+    .backgroundColor(HdsHeaderStyle.FLOATING_FILL)
+    .border({
+      width: 1,
+      color: HdsHeaderStyle.FLOATING_BORDER
+    })
   }
 
   build() {
@@ -251,10 +265,11 @@ export struct ChatDetailBottom {
     }
     .padding({
       top: $r('app.float.chat_detail_bottom_padding'),
+      left: HdsHeaderMetrics.ROOT_HORIZONTAL_PADDING,
+      right: HdsHeaderMetrics.ROOT_HORIZONTAL_PADDING,
       bottom: $r('app.float.chat_detail_bottom_padding'),
     })
     .width(BaseConstants.FULL_WIDTH)
-    .backgroundBlurStyle(BlurStyle.Thin)
     .backgroundColor(Color.Transparent)
     .expandSafeArea([SafeAreaType.SYSTEM])
   }

@@ -1,0 +1,393 @@
+{
+  "me": {
+    "chatId": 9001,
+    "chatType": "user",
+    "fullName": "Homogram Test Agent",
+    "firstName": "Homogram",
+    "lastName": "Agent",
+    "username": "homogram_test_agent",
+    "isContact": true,
+    "isMutualContact": true,
+    "bio": "Local fixture identity for Homogram UITest runs."
+  },
+  "peers": [
+    {
+      "chatId": 1001,
+      "chatType": "user",
+      "fullName": "Homogram QA",
+      "firstName": "Homogram",
+      "lastName": "QA",
+      "username": "homogram_qa",
+      "isContact": true,
+      "isMutualContact": true,
+      "pinned": true,
+      "unreadCount": 2,
+      "bio": "Primary smoke-test chat for tap, type, send, and inspect flows."
+    },
+    {
+      "chatId": 1002,
+      "chatType": "group",
+      "fullName": "Fixture Design Room",
+      "firstName": "Fixture",
+      "lastName": "Design",
+      "username": "fixture_design_room",
+      "isContact": true,
+      "isMutualContact": true,
+      "megagroup": true,
+      "unreadCount": 1,
+      "bio": "Group fixture for composer, reply preview, and scrolling checks."
+    },
+    {
+      "chatId": 1003,
+      "chatType": "channel",
+      "fullName": "Release Radar",
+      "firstName": "Release",
+      "lastName": "Radar",
+      "username": "release_radar",
+      "isContact": false,
+      "isMutualContact": false,
+      "unreadCount": 0,
+      "bio": "Read-only channel fixture for release-style messages."
+    },
+    {
+      "chatId": 1004,
+      "chatType": "group",
+      "fullName": "Scrollback Lab",
+      "firstName": "Scrollback",
+      "lastName": "Lab",
+      "username": "scrollback_lab",
+      "isContact": true,
+      "isMutualContact": true,
+      "megagroup": true,
+      "unreadCount": 5,
+      "bio": "Large history fixture for message list pagination and scroll position tests."
+    },
+    {
+      "chatId": 1005,
+      "chatType": "user",
+      "fullName": "Media Queue",
+      "firstName": "Media",
+      "lastName": "Queue",
+      "username": "media_queue",
+      "isContact": true,
+      "isMutualContact": false,
+      "muted": true,
+      "unreadCount": 0,
+      "bio": "User fixture for attachment-adjacent text flows."
+    },
+    {
+      "chatId": 1006,
+      "chatType": "channel",
+      "fullName": "Search Index",
+      "firstName": "Search",
+      "lastName": "Index",
+      "username": "search_index",
+      "isContact": false,
+      "isMutualContact": false,
+      "unreadCount": 3,
+      "bio": "Channel fixture with repeated search keywords."
+    },
+    {
+      "chatId": 1007,
+      "chatType": "user",
+      "fullName": "Accessibility Bench",
+      "firstName": "Accessibility",
+      "lastName": "Bench",
+      "username": "accessibility_bench",
+      "isContact": true,
+      "isMutualContact": true,
+      "unreadCount": 1,
+      "bio": "Fixture for long labels and readable message content."
+    },
+    {
+      "chatId": 1008,
+      "chatType": "group",
+      "fullName": "Layout Watch",
+      "firstName": "Layout",
+      "lastName": "Watch",
+      "username": "layout_watch",
+      "isContact": true,
+      "isMutualContact": true,
+      "megagroup": true,
+      "forum": true,
+      "unreadCount": 7,
+      "bio": "Forum-style fixture for row density and navigation experiments."
+    },
+    {
+      "chatId": 1009,
+      "chatType": "user",
+      "fullName": "Offline Cache",
+      "firstName": "Offline",
+      "lastName": "Cache",
+      "username": "offline_cache",
+      "isContact": true,
+      "isMutualContact": true,
+      "archived": true,
+      "unreadCount": 0,
+      "bio": "Fixture for cached-state assertions."
+    },
+    {
+      "chatId": 1010,
+      "chatType": "group",
+      "fullName": "Push Sandbox",
+      "firstName": "Push",
+      "lastName": "Sandbox",
+      "username": "push_sandbox",
+      "isContact": true,
+      "isMutualContact": true,
+      "megagroup": true,
+      "muted": true,
+      "unreadCount": 4,
+      "bio": "Group fixture that stays local while push service is bypassed."
+    },
+    {
+      "chatId": 1011,
+      "chatType": "channel",
+      "fullName": "Migration Notes",
+      "firstName": "Migration",
+      "lastName": "Notes",
+      "username": "migration_notes",
+      "isContact": false,
+      "isMutualContact": false,
+      "unreadCount": 2,
+      "bio": "Channel fixture for structured product notes."
+    },
+    {
+      "chatId": 1012,
+      "chatType": "group",
+      "fullName": "Theme Workshop",
+      "firstName": "Theme",
+      "lastName": "Workshop",
+      "username": "theme_workshop",
+      "isContact": true,
+      "isMutualContact": true,
+      "megagroup": true,
+      "unreadCount": 6,
+      "bio": "Group fixture for dark/light surface checks."
+    },
+    {
+      "chatId": 1013,
+      "chatType": "user",
+      "fullName": "Error Inbox",
+      "firstName": "Error",
+      "lastName": "Inbox",
+      "username": "error_inbox",
+      "isContact": true,
+      "isMutualContact": false,
+      "unreadCount": 1,
+      "bio": "Fixture for failure copy and retry affordances."
+    },
+    {
+      "chatId": 1014,
+      "chatType": "user",
+      "fullName": "Long Names And Wraps",
+      "firstName": "Long",
+      "lastName": "Wraps",
+      "username": "long_names_and_wraps",
+      "isContact": true,
+      "isMutualContact": true,
+      "unreadCount": 8,
+      "bio": "Fixture for long single-line and wrapping text."
+    },
+    {
+      "chatId": 1015,
+      "chatType": "group",
+      "fullName": "Keyboard Flow",
+      "firstName": "Keyboard",
+      "lastName": "Flow",
+      "username": "keyboard_flow",
+      "isContact": true,
+      "isMutualContact": true,
+      "megagroup": true,
+      "unreadCount": 3,
+      "bio": "Group fixture for input focus, IME, and send-button checks."
+    },
+    {
+      "chatId": 1016,
+      "chatType": "channel",
+      "fullName": "Dense List Channel",
+      "firstName": "Dense",
+      "lastName": "List",
+      "username": "dense_list_channel",
+      "isContact": false,
+      "isMutualContact": false,
+      "unreadCount": 10,
+      "bio": "Channel fixture for chat list density."
+    },
+    {
+      "chatId": 1017,
+      "chatType": "user",
+      "fullName": "Multi Device QA",
+      "firstName": "Multi",
+      "lastName": "Device",
+      "username": "multi_device_qa",
+      "isContact": true,
+      "isMutualContact": true,
+      "unreadCount": 2,
+      "bio": "Fixture for foreground and resume flows."
+    },
+    {
+      "chatId": 1018,
+      "chatType": "group",
+      "fullName": "Composer Bots",
+      "firstName": "Composer",
+      "lastName": "Bots",
+      "username": "composer_bots",
+      "isContact": true,
+      "isMutualContact": true,
+      "megagroup": true,
+      "unreadCount": 4,
+      "bio": "Group fixture for command-like and generated text."
+    },
+    {
+      "chatId": 1019,
+      "chatType": "user",
+      "fullName": "Reply Chain",
+      "firstName": "Reply",
+      "lastName": "Chain",
+      "username": "reply_chain",
+      "isContact": true,
+      "isMutualContact": true,
+      "unreadCount": 0,
+      "bio": "Fixture with dense reply threading."
+    },
+    {
+      "chatId": 1020,
+      "chatType": "group",
+      "fullName": "Release Candidate",
+      "firstName": "Release",
+      "lastName": "Candidate",
+      "username": "release_candidate",
+      "isContact": true,
+      "isMutualContact": true,
+      "megagroup": true,
+      "pinned": true,
+      "unreadCount": 9,
+      "bio": "Group fixture for candidate build review."
+    },
+    {
+      "chatId": 1021,
+      "chatType": "channel",
+      "fullName": "Storage Probe",
+      "firstName": "Storage",
+      "lastName": "Probe",
+      "username": "storage_probe",
+      "isContact": false,
+      "isMutualContact": false,
+      "unreadCount": 0,
+      "bio": "Channel fixture for cached media path operations."
+    },
+    {
+      "chatId": 1022,
+      "chatType": "user",
+      "fullName": "Auth Fixture",
+      "firstName": "Auth",
+      "lastName": "Fixture",
+      "username": "auth_fixture",
+      "isContact": true,
+      "isMutualContact": false,
+      "unreadCount": 1,
+      "bio": "Fixture peer for login bypass confidence checks."
+    },
+    {
+      "chatId": 1023,
+      "chatType": "group",
+      "fullName": "Notification Review",
+      "firstName": "Notification",
+      "lastName": "Review",
+      "username": "notification_review",
+      "isContact": true,
+      "isMutualContact": true,
+      "megagroup": true,
+      "muted": true,
+      "unreadCount": 11,
+      "bio": "Group fixture for notification-related copy."
+    },
+    {
+      "chatId": 1024,
+      "chatType": "user",
+      "fullName": "Empty State Lab",
+      "firstName": "Empty",
+      "lastName": "Lab",
+      "username": "empty_state_lab",
+      "isContact": true,
+      "isMutualContact": true,
+      "unreadCount": 0,
+      "bio": "Fixture for low-activity states."
+    }
+  ],
+  "participants": [
+    {
+      "chatId": 1002,
+      "members": [
+        { "userId": 9101, "fullName": "Ada Fixture", "firstName": "Ada", "lastName": "Fixture", "username": "ada_fixture", "role": "creator" },
+        { "userId": 9102, "fullName": "Beau Fixture", "firstName": "Beau", "lastName": "Fixture", "username": "beau_fixture", "role": "admin" },
+        { "userId": 9103, "fullName": "Casey Fixture", "firstName": "Casey", "lastName": "Fixture", "username": "casey_fixture", "role": "user" }
+      ]
+    },
+    {
+      "chatId": 1004,
+      "members": [
+        { "userId": 9111, "fullName": "Drew Scroll", "firstName": "Drew", "lastName": "Scroll", "username": "drew_scroll", "role": "creator" },
+        { "userId": 9112, "fullName": "Emery History", "firstName": "Emery", "lastName": "History", "username": "emery_history", "role": "admin" },
+        { "userId": 9113, "fullName": "Fin Backlog", "firstName": "Fin", "lastName": "Backlog", "username": "fin_backlog", "role": "user" }
+      ]
+    },
+    {
+      "chatId": 1008,
+      "members": [
+        { "userId": 9121, "fullName": "Gale Layout", "firstName": "Gale", "lastName": "Layout", "username": "gale_layout", "role": "creator" },
+        { "userId": 9122, "fullName": "Harper Grid", "firstName": "Harper", "lastName": "Grid", "username": "harper_grid", "role": "admin" },
+        { "userId": 9123, "fullName": "Indigo Panel", "firstName": "Indigo", "lastName": "Panel", "username": "indigo_panel", "role": "user" }
+      ]
+    },
+    {
+      "chatId": 1010,
+      "members": [
+        { "userId": 9131, "fullName": "Jules Push", "firstName": "Jules", "lastName": "Push", "username": "jules_push", "role": "creator" },
+        { "userId": 9132, "fullName": "Kai Token", "firstName": "Kai", "lastName": "Token", "username": "kai_token", "role": "admin" },
+        { "userId": 9133, "fullName": "Lane Local", "firstName": "Lane", "lastName": "Local", "username": "lane_local", "role": "user" }
+      ]
+    },
+    {
+      "chatId": 1012,
+      "members": [
+        { "userId": 9141, "fullName": "Mira Theme", "firstName": "Mira", "lastName": "Theme", "username": "mira_theme", "role": "creator" },
+        { "userId": 9142, "fullName": "Nico Contrast", "firstName": "Nico", "lastName": "Contrast", "username": "nico_contrast", "role": "admin" },
+        { "userId": 9143, "fullName": "Owen Palette", "firstName": "Owen", "lastName": "Palette", "username": "owen_palette", "role": "user" }
+      ]
+    },
+    {
+      "chatId": 1015,
+      "members": [
+        { "userId": 9151, "fullName": "Parker Focus", "firstName": "Parker", "lastName": "Focus", "username": "parker_focus", "role": "creator" },
+        { "userId": 9152, "fullName": "Quinn Input", "firstName": "Quinn", "lastName": "Input", "username": "quinn_input", "role": "admin" },
+        { "userId": 9153, "fullName": "Riley Send", "firstName": "Riley", "lastName": "Send", "username": "riley_send", "role": "user" }
+      ]
+    },
+    {
+      "chatId": 1018,
+      "members": [
+        { "userId": 9161, "fullName": "Sage Command", "firstName": "Sage", "lastName": "Command", "username": "sage_command", "role": "creator" },
+        { "userId": 9162, "fullName": "Tali Compose", "firstName": "Tali", "lastName": "Compose", "username": "tali_compose", "role": "admin" },
+        { "userId": 9163, "fullName": "Uma Draft", "firstName": "Uma", "lastName": "Draft", "username": "uma_draft", "role": "user" }
+      ]
+    },
+    {
+      "chatId": 1020,
+      "members": [
+        { "userId": 9171, "fullName": "Vale Candidate", "firstName": "Vale", "lastName": "Candidate", "username": "vale_candidate", "role": "creator" },
+        { "userId": 9172, "fullName": "Wren Review", "firstName": "Wren", "lastName": "Review", "username": "wren_review", "role": "admin" },
+        { "userId": 9173, "fullName": "Xia Build", "firstName": "Xia", "lastName": "Build", "username": "xia_build", "role": "user" }
+      ]
+    },
+    {
+      "chatId": 1023,
+      "members": [
+        { "userId": 9181, "fullName": "Yara Notify", "firstName": "Yara", "lastName": "Notify", "username": "yara_notify", "role": "creator" },
+        { "userId": 9182, "fullName": "Zed Badge", "firstName": "Zed", "lastName": "Badge", "username": "zed_badge", "role": "admin" },
+        { "userId": 9183, "fullName": "Ari Alert", "firstName": "Ari", "lastName": "Alert", "username": "ari_alert", "role": "user" }
+      ]
+    }
+  ]
+}

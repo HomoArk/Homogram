@@ -31,6 +31,7 @@ export struct Password {
             .height(256)
           Text($r('app.string.login_password_hint')).margin({ top: 20 })
           TextInput({ placeholder: $r('app.string.login_password_placeholder'), text: this.password })
+            .id('hg-login-password-input')
             .type(InputType.Password)
             .fontFamily("HarmonyOS Sans Condensed")
             .fontSize(20)
@@ -39,6 +40,7 @@ export struct Password {
               this.password = value;
             })
           Button($r('app.string.login_sign_in')).width(150).margin({ top: 20 })
+            .id('hg-login-password-submit')
             .enabled(!this.isLoading)
             .onClick(async () => {
             if (this.password.length == 0) {

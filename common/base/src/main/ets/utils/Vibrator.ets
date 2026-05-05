@@ -5,7 +5,7 @@ export class Vibrator {
   public static async kata() {
     let effect = vibrator.EffectId.EFFECT_CLOCK_TIMER;
     try {
-      // 查询是否支持'haptic.effect.soft'
+      // Query whether the selected haptic effect is supported.
       vibrator.isSupportEffect(effect, (err: BusinessError, state: boolean) => {
         if (err) {
           console.error(`Failed to query effect. Code: ${err.code}, message: ${err.message}`);
@@ -14,7 +14,7 @@ export class Vibrator {
         console.info('Succeed in querying effect');
         if (state) {
           try {
-            // 触发马达振动
+            // Trigger haptic vibration.
             vibrator.startVibration({
               type: 'preset',
               effectId: effect,

@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 import { BaseConstants, BreakpointConstants, Logger, Vibrator } from '@ohos/base';
 import { ChatItem } from './ChatItem';
 import { HomeTopSearch } from '../common/HomeTopSearch';
+import { HeaderFloatingSearchButton, HdsHeaderMetrics } from '../common/HdsHeaderPrimitives';
 import { HomeConstants } from '../../constants/HomeConstants';
 import { deviceInfo } from '@kit.BasicServicesKit';
 import { ChatType } from '../../api';
@@ -34,7 +35,10 @@ export struct ChatList {
   @Link isFromHideSearchBar: boolean;
   @Consume('pageInfo') pageInfo?: NavPathStack;
   @State searchValue: string = '';
-  @State homeTopSearchHeight: Length = 102;
+  @State isSearchExpanded: boolean = false;
+  @State searchCollapseProgress: number = 0;
+  @State homeTopSearchHeight: Length = 176;
+  @StorageProp('bottomRectHeight') bottomRectHeight: number = 0;
   @Consume isAppFirstLoad: boolean;
   @Consume currentForumId: string;
   @State chatItemTransitionEffect: TransitionEffect | undefined = undefined;
@@ -44,6 +48,11 @@ export struct ChatList {
   private lastIndexInOneScreen: number = -1;
   private onScrollIndexCounter: number = 0;
   private actions: ChatListActions = new ChatListActions();
+  private readonly floatingTabBarHeight: number = 56;
+  private readonly floatingTabBarBottomMargin: number = 8;
+  private readonly listBottomBreathingRoom: number = 16;
+  private readonly listTopBreathingRoom: number = 20;
+  private readonly searchCollapseDistance: number = 96;
 
   @Styles
   animationStyle() {
@@ -56,6 +65,14 @@ export struct ChatList {
   chatListAnimationStyle() {
     .animation({ curve: curves.springMotion(0.6, 0.8) })
     .transition(this.chatItemTransitionEffect)
+  }
+
+  @Builder
+  FloatingSearchButton() {
+    HeaderFloatingSearchButton({ buttonSize: this.floatingTabBarHeight })
+      .onClick(() => {
+        this.isSearchExpanded = true;
+      })
   }
 
   @Builder
@@ -97,11 +114,15 @@ export struct ChatList {
   build() {
     Stack({ alignContent: Alignment.Top }) {
       HomeTopSearch({
-        title: $r('app.string.app_name'),
+        title: 'Chats',
+        isCompact: $isShowSearchIcon,
+        isSearchExpanded: $isSearchExpanded,
+        searchValue: $searchValue,
+        searchCollapseProgress: this.searchCollapseProgress,
       })
         .expandSafeArea([SafeAreaType.SYSTEM])
         .zIndex(1)
-        .onAreaChange((oldValue, newValue) => {
+        .onAreaChange((oldValue: Area, newValue: Area) => {
           this.homeTopSearchHeight = newValue.height
           console.debug("homeTopSearchHeight", oldValue.height.toString(), "to", newValue.height)
         })
@@ -154,9 +175,9 @@ export struct ChatList {
 
         // .animationStyle() // forbidden, will cause a mass
 
-        ListItem() { // Placeholder to prevent HomeTopSearch from overlapping ChatItems
+        ListItem() { // Placeholder to prevent HomeTopSearch from overlapping ChatItems.
           Row()
-            .height(this.homeTopSearchHeight)
+            .height(this.getTopSpacerHeight())
             .margin({ bottom: -20 })
             .width(BaseConstants.FULL_WIDTH)
         }
@@ -167,15 +188,16 @@ export struct ChatList {
               chatData: item,
               isInTopicPage: this.isInTopicPage
             })
+              .id('hg-chat-row-' + item.chatId.toString())
               .onClick(() => {
                 this.currentChatId = item.chatId.toString();
                 let chat = this.chatDataSource.get(this.currentChatId);
                 Logger.debug('ChatList ChatItem onClick chatType: ' + chat?.chatType + ' forum: ' + chat?.forum);
-                
-                // 鍒ゆ柇鏄惁涓?Split 妯″紡锛堥潪 sm 鏂偣锛?
+
+                // Check whether split mode is active. This means the breakpoint is not sm.
                 const isSplitMode = this.currentBreakpoint !== BreakpointConstants.BREAKPOINT_SM;
-                // 鍒ゆ柇褰撳墠鏄惁宸叉湁 ChatDetail 椤甸潰
-                let hasChatDetail : undefined | boolean = undefined;
+                // Check whether a ChatDetail page already exists.
+                let hasChatDetail: undefined | boolean = undefined;
                 try {
                   hasChatDetail = this.pageInfo && this.pageInfo?.size() >= 1 &&
                   this.pageInfo.getParamByName('ChatDetail')?.length > 0;
@@ -231,12 +253,11 @@ export struct ChatList {
 
         ListItem() {
           Row()
-            .height((this.currentBreakpoint === BreakpointConstants.BREAKPOINT_LG || this.currentBreakpoint === BreakpointConstants.BREAKPOINT_XL) ? BaseConstants.FULL_PERCENT :
-              (deviceInfo.deviceType === BaseConstants.DEVICE_TYPES[0] ? $r('app.float.tab_size_lg') :
-              $r('app.float.tab_size')))
+            .height(this.getBottomSpacerHeight())
             .width(BaseConstants.FULL_WIDTH)
         }
       }
+      .id('hg-chat-list')
       .height(BaseConstants.FULL_PERCENT)
       .cachedCount(BaseConstants.LAZY_FOR_EACH_CACHED_COUNT)
       .padding({
@@ -256,28 +277,24 @@ export struct ChatList {
           return;
         }
         this.chatItemTransitionEffect = undefined;
-        if (end === this.lastIndexInOneScreen && !this.isShowSearchIcon && !this.isFromHideSearchBar) {
-          this.isShowSearchIcon = true;
-          this.isFromHideSearchBar = true;
-          Logger.debug('ChatList onScrollIndex isShowSearchIcon: ' + this.isShowSearchIcon);
-          // this.scroller.scrollToIndex(0,
-          //   true); // wrong, will stop the list from scrolling, should add margin of the first
-          // this.homeNavTitleBarStyle = BarStyle.STACK;
-          return;
-        }
+        this.updateSearchCollapseProgress();
       })
       .onScrollFrameBegin((offset, state) => {
         // Logger.debug('ChatList onScrollFrameBegin offset: ' + offset + ' state: ' + state.toString());
         let result = this.scroller.currentOffset();
         // Logger.debug('ChatList onScrollFrameBegin currentOffset: xOffset: ' + result.xOffset + ' yOffset: ' +
         // result.yOffset);
-        if (offset < 0 && result.yOffset < 0 && this.isShowSearchIcon) {
-          this.isShowSearchIcon = false;
-          this.isFromHideSearchBar = false;
+        if (offset < 0 && result.yOffset <= 0) {
+          this.resetSearchCollapse();
           // Vibrator.kata();
           Logger.debug('ChatList onScrollFrameBegin isShowSearchIcon: ' + this.isShowSearchIcon);
+        } else {
+          this.updateSearchCollapseProgress(Math.max(0, result.yOffset + offset));
         }
         return { offsetRemain: offset };
+      })
+      .onDidScroll((scrollOffset: number, scrollState: ScrollState) => {
+        this.updateSearchCollapseProgress();
       })
       .edgeEffect(EdgeEffect.Spring, { alwaysEnabled: true })
       .onReachStart(() => {
@@ -292,6 +309,30 @@ export struct ChatList {
       //   startMargin: HomeConstants.CHAT_LIST_DIVIDER_START_MARGIN,
       //   endMargin: HomeConstants.CHAT_LIST_DIVIDER_END_MARGIN
       // })
+
+      if (this.isShowSearchIcon && !this.isSearchExpanded) {
+        Row() {
+          this.FloatingSearchButton()
+        }
+        .width(BaseConstants.FULL_WIDTH)
+        .height(BaseConstants.FULL_HEIGHT)
+        .justifyContent(FlexAlign.End)
+        .alignItems(VerticalAlign.Bottom)
+        .padding({
+          right: HdsHeaderMetrics.ROOT_HORIZONTAL_PADDING,
+          bottom: this.getFloatingSearchBottomMargin(),
+        })
+        .hitTestBehavior(HitTestMode.Transparent)
+        .zIndex(3)
+        .opacity(this.getFloatingSearchOpacity())
+        .scale({
+          x: this.getFloatingSearchScale(),
+          y: this.getFloatingSearchScale()
+        })
+        .transition(TransitionEffect.OPACITY.animation({ curve: curves.springMotion(0.6, 0.8) })
+          .combine(TransitionEffect.scale({ x: 0.85, y: 0.85 })
+            .animation({ curve: curves.springMotion(0.6, 0.8) })))
+      }
     }
     .expandSafeArea([SafeAreaType.SYSTEM])
     .onAppear(() => {
@@ -309,6 +350,70 @@ export struct ChatList {
     } else {
       this.chatItemTransitionEffect = undefined;
     }
+  }
+
+  private getBottomSpacerHeight(): Length {
+    if (this.currentBreakpoint === BreakpointConstants.BREAKPOINT_LG ||
+      this.currentBreakpoint === BreakpointConstants.BREAKPOINT_XL) {
+      return BaseConstants.FULL_PERCENT;
+    }
+
+    if (deviceInfo.deviceType === BaseConstants.DEVICE_2IN1) {
+      return this.floatingTabBarHeight;
+    }
+
+    return this.floatingTabBarHeight + this.floatingTabBarBottomMargin + this.bottomRectHeight +
+      this.listBottomBreathingRoom;
+  }
+
+  private getTopSpacerHeight(): Length {
+    if (typeof this.homeTopSearchHeight === 'number') {
+      return this.homeTopSearchHeight + this.listTopBreathingRoom;
+    }
+
+    return this.homeTopSearchHeight;
+  }
+
+  private getFloatingSearchBottomMargin(): Length {
+    return this.floatingTabBarBottomMargin;
+  }
+
+  private updateSearchCollapseProgress(yOffset?: number): void {
+    if (this.isSearchExpanded) {
+      return;
+    }
+
+    const currentYOffset = yOffset === undefined ? this.getCurrentScrollYOffset() : yOffset;
+    const nextProgress = Math.min(1, Math.max(0, currentYOffset / this.searchCollapseDistance));
+    if (Math.abs(nextProgress - this.searchCollapseProgress) > 0.01) {
+      this.searchCollapseProgress = nextProgress;
+    }
+
+    const shouldShowFloatingSearch = nextProgress >= 0.98;
+    if (this.isShowSearchIcon !== shouldShowFloatingSearch) {
+      this.isShowSearchIcon = shouldShowFloatingSearch;
+    }
+    this.isFromHideSearchBar = nextProgress > 0.05;
+  }
+
+  private resetSearchCollapse(): void {
+    this.searchCollapseProgress = 0;
+    this.isShowSearchIcon = false;
+    this.isFromHideSearchBar = false;
+    this.isSearchExpanded = false;
+  }
+
+  private getCurrentScrollYOffset(): number {
+    const result = this.scroller.currentOffset();
+    return Math.max(0, result.yOffset);
+  }
+
+  private getFloatingSearchOpacity(): number {
+    return Math.min(1, Math.max(0, (this.searchCollapseProgress - 0.82) / 0.18));
+  }
+
+  private getFloatingSearchScale(): number {
+    return 0.9 + this.getFloatingSearchOpacity() * 0.1;
   }
 
 }

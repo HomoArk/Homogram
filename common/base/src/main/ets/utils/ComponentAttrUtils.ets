@@ -1,10 +1,10 @@
 // ComponentAttrUtils.ets
-// 获取组件相对窗口的位置
+// Get a component's position relative to the window.
 import { componentUtils, UIContext } from '@kit.ArkUI';
 import { JSON } from '@kit.ArkTS';
 
 export class ComponentAttrUtils {
-  // 根据组件的id获取组件的位置信息
+  // Get component position information by component id.
   public static getRectInfoById(context: UIContext, id: string): RectInfoInPx {
     if (!context || !id) {
       throw Error('object is empty');

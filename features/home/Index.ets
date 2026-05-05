@@ -64,5 +64,11 @@ export {
 export { appLifecycleService } from "./src/main/ets/services/AppLifecycleService";
 export { sessionService } from "./src/main/ets/services/SessionService";
 export { telegramSyncService } from "./src/main/ets/services/TelegramSyncService";
+export {
+  applyTelegramFixtureModeFromUri,
+  isTelegramFixtureMode,
+  setTelegramFixtureMode,
+  telegramFixtureModeDescription,
+} from "./src/main/ets/testing/TestMode";
 
 export { EventConstants } from "./src/main/ets/constants/EventConstants";

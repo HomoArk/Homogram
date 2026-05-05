@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import { BaseConstants, BreakpointConstants, Logger } from '@ohos/base';
+import { BaseConstants, BreakpointConstants } from '@ohos/base';
 import { HomeConstants } from '../../constants/HomeConstants';
 import { DateHelper } from '@ohos/base';
 import { ChatType } from '../../api'
@@ -21,6 +21,7 @@ import { HashMap } from '@kit.ArkTS';
 import { SeenChat } from '../../entities/SeenChat';
 import { getOrDownloadProfilePhoto, getThumbProfilePhotoPixelMap } from '../../utils';
 import { ChatRowState } from '../../viewmodel/Chat/ChatRowState';
+import { HdsListItemCard, PrefixCustomBuilder, SuffixCustomBuilder } from '@kit.UIDesignKit';
 import {
   ChatPhotoNodeController,
   createChatPhotoNode,
@@ -40,81 +41,107 @@ export struct ChatItem {
   @ObjectLink chatData: ChatRowState;
   @Prop isInTopicPage: boolean = false;
 
-  build() {
-    Flex({ alignItems: ItemAlign.Center }) {
-      Stack() {
-        NodeContainer(this.chatPhotoNodeController)
-      }
-      .width(48)
-      .height(48)
-      .margin({ left: $r('app.float.icon_margin_one'), right: $r('app.float.icon_margin_one') })
+  @Builder
+  AvatarBuilder() {
+    Stack() {
+      NodeContainer(this.chatPhotoNodeController)
+    }
+    .width(48)
+    .height(48)
+  }
 
-      if (!this.isInTopicPage) {
-        Flex({ direction: FlexDirection.Column, justifyContent: FlexAlign.Start, alignItems: ItemAlign.Start }) {
-          // Column() {
-          Text(this.chatData.name)
+  @Builder
+  TextBuilder() {
+    if (!this.isInTopicPage) {
+      Flex({ direction: FlexDirection.Column, justifyContent: FlexAlign.Start, alignItems: ItemAlign.Start }) {
+        Text(this.chatData.name)
+          .maxLines(HomeConstants.CHAT_LIST_NAME_MAX_LINE)
+          .fontSize(BaseConstants.FONT_SIZE_SIXTEEN)
+          .fontWeight(BaseConstants.FONT_WEIGHT_FIVE)
+          .lineHeight($r('app.float.text_line_height_two'))
+          .fontFamily(BaseConstants.FONT_FAMILY_MEDIUM)
+        if (this.chatData.chatType === ChatType.Group) {
+          Text(this.chatData.lastMessageSenderName)
             .maxLines(HomeConstants.CHAT_LIST_NAME_MAX_LINE)
-            .fontSize(BaseConstants.FONT_SIZE_SIXTEEN)
-            .fontWeight(BaseConstants.FONT_WEIGHT_FIVE)
-            .lineHeight($r('app.float.text_line_height_two'))
-            .fontFamily(BaseConstants.FONT_FAMILY_MEDIUM)
-          if (this.chatData.chatType === ChatType.Group) {
-            Text(this.chatData.lastMessageSenderName)
-              .maxLines(HomeConstants.CHAT_LIST_NAME_MAX_LINE)
-              .fontSize(BaseConstants.FONT_SIZE_FIFTEEN)
-              .fontWeight(BaseConstants.FONT_WEIGHT_FOUR)
-              .lineHeight($r('app.float.text_line_height_one'))
-              .fontFamily(BaseConstants.FONT_FAMILY_NORMAL)
-          }
-          Text(this.chatData.lastMessageText)
-            .maxLines(HomeConstants.CHAT_DETAIL_MAX_LINE)
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
-            .fontSize(BaseConstants.FONT_SIZE_FOURTEEN)
+            .fontSize(BaseConstants.FONT_SIZE_FIFTEEN)
             .fontWeight(BaseConstants.FONT_WEIGHT_FOUR)
             .lineHeight($r('app.float.text_line_height_one'))
             .fontFamily(BaseConstants.FONT_FAMILY_NORMAL)
-            .fontColor(Color.Grey)
-            .width(BaseConstants.FULL_WIDTH)
         }
-        // .flexShrink(BaseConstants.FLEX_SHRINK_ONE)
-        // .flexGrow(BaseConstants.FLEX_GROW_ONE)
-        .margin({ left: $r('app.float.icon_margin_one') })
-
-        Blank()
-        Column() {
-          Text(DateHelper.getParsedDateString(this.chatData.lastMessageTimestamp))
-            .fontWeight(BaseConstants.FONT_WEIGHT_FOUR)
-            .fontSize(BaseConstants.FONT_SIZE_TEN)
-            .fontColor(Color.Grey)
-            .fontFamily(BaseConstants.FONT_FAMILY_NORMAL)
-            .width($r('app.float.chat_list_time_width'))
-          if (this.hasUnread()) {
-            Text(this.unreadText())
-              .fontSize(BaseConstants.FONT_SIZE_TEN)
-              .fontColor(Color.White)
-              .textAlign(TextAlign.Center)
-              .minFontSize(8)
-              .maxLines(1)
-              .padding({ left: 6, right: 6 })
-              .height(20)
-              .constraintSize({ minWidth: 20 })
-              .borderRadius(10)
-              .backgroundColor(this.chatData.muted ? Color.Grey : $r('sys.color.ohos_id_color_emphasize'))
-              .margin({ top: 6 })
-          }
-        }
-        .flexBasis(HomeConstants.FLEX_BASIS_AUTO)
-        .margin({ left: $r('app.float.icon_margin_two'), right: $r('app.float.icon_margin_one') })
-
-        // .padding($r('app.float.chat_list_time_padding'))
+        Text(this.chatData.lastMessageText)
+          .maxLines(HomeConstants.CHAT_DETAIL_MAX_LINE)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+          .fontSize(BaseConstants.FONT_SIZE_FOURTEEN)
+          .fontWeight(BaseConstants.FONT_WEIGHT_FOUR)
+          .lineHeight($r('app.float.text_line_height_one'))
+          .fontFamily(BaseConstants.FONT_FAMILY_NORMAL)
+          .fontColor(Color.Grey)
+          .width(BaseConstants.FULL_WIDTH)
       }
+      .width(BaseConstants.FULL_WIDTH)
     }
-    .width(BaseConstants.FULL_WIDTH)
-    .padding({
-      top: HomeConstants.CHAT_LIST_ITEM_MARGIN,
-      bottom: HomeConstants.CHAT_LIST_ITEM_MARGIN,
+  }
+
+  @Builder
+  SuffixBuilder() {
+    if (!this.isInTopicPage) {
+      Column() {
+        Text(DateHelper.getParsedDateString(this.chatData.lastMessageTimestamp))
+          .fontWeight(BaseConstants.FONT_WEIGHT_FOUR)
+          .fontSize(BaseConstants.FONT_SIZE_TEN)
+          .fontColor(Color.Grey)
+          .fontFamily(BaseConstants.FONT_FAMILY_NORMAL)
+          .textAlign(TextAlign.End)
+          .width(64)
+        if (this.hasUnread()) {
+          Text(this.unreadText())
+            .fontSize(BaseConstants.FONT_SIZE_TEN)
+            .fontColor(Color.White)
+            .textAlign(TextAlign.Center)
+            .minFontSize(8)
+            .maxLines(1)
+            .padding({ left: 6, right: 6 })
+            .height(20)
+            .constraintSize({ minWidth: 20 })
+            .borderRadius(10)
+            .backgroundColor(this.chatData.muted ? Color.Grey : $r('sys.color.ohos_id_color_emphasize'))
+            .margin({ top: 6 })
+        }
+      }
+      .flexBasis(HomeConstants.FLEX_BASIS_AUTO)
+      .alignItems(HorizontalAlign.End)
+      .margin({ left: 8 })
+    }
+  }
+
+  build() {
+    HdsListItemCard({
+      prefixItem: new PrefixCustomBuilder(() => {
+        this.AvatarBuilder();
+      }),
+      textItem: {
+        customBuilder: () => {
+          this.TextBuilder();
+        }
+      },
+      suffixItem: new SuffixCustomBuilder(() => {
+        this.SuffixBuilder();
+      }),
+      cardHeight: this.isInTopicPage ? 58 : 68,
+      cardBackgroundColor: Color.Transparent,
+      cardBorderRadius: 16,
+      hoverBorderRadius: 16,
+      cardPrefixMargin: 24,
+      cardSuffixMargin: 24,
+      accessibilityOptions: {
+        accessibilityText: this.chatData.name,
+        accessibilityDescription: this.chatData.lastMessageText,
+        accessibilityGroup: {
+          isGroup: true
+        }
+      }
     })
-    .hoverEffect(HoverEffect.Highlight)
+    .width(BaseConstants.FULL_WIDTH)
   }
 
   private hasUnread(): boolean {

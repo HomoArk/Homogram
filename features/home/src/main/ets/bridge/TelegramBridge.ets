@@ -72,6 +72,9 @@ import {
   submitPassword as nativeSubmitPassword,
   unregisterPush as nativeUnregisterPush,
 } from 'libhomogrape.so';
+import { isTelegramFixtureMode, telegramFixtureModeDescription } from '../testing/TestMode';
+import { TelegramFixtureBridge } from '../testing/TelegramFixtureBridge';
+import { TelegramFixtureEvents } from '../testing/FixtureRecords';
 
 export {
   ChatType,
@@ -253,6 +256,7 @@ class NativeMessagePageRecord implements NativeMessagePage {
 }
 
 class TelegramBridge {
+  private fixture: TelegramFixtureBridge = new TelegramFixtureBridge();
   private started: boolean = false;
   private callbacksRegistered: boolean = false;
   private events: TelegramBridgeEvents = {};
@@ -261,6 +265,14 @@ class TelegramBridge {
 
   async initialize(events: TelegramBridgeEvents): Promise<void> {
     this.events = events;
+    if (isTelegramFixtureMode()) {
+      Logger.info('TelegramBridge initialize: ' + telegramFixtureModeDescription());
+      const state: NativeRuntimeState = await this.fixture.initialize(this.toFixtureEvents(events),
+        new NativeRuntimeOptionsRecord(256));
+      this.started = state.running;
+      this.lastEventSeq = state.lastEventSeq;
+      return;
+    }
     if (!this.callbacksRegistered) {
       Logger.info('TelegramBridge initialize: native runtime initialize');
       const state: NativeRuntimeState = await nativeInitialize(new NativeRuntimeOptionsRecord(256));
@@ -276,36 +288,59 @@ class TelegramBridge {
   }
 
   async isLoggedIn(): Promise<boolean> {
+    if (isTelegramFixtureMode()) {
+      return this.fixture.isLoggedIn();
+    }
     const authorized = await nativeIsLoggedIn();
     Logger.info('TelegramBridge isLoggedIn: ' + authorized);
     return authorized;
   }
 
   async registerDevice(token: string): Promise<boolean> {
+    if (isTelegramFixtureMode()) {
+      return this.fixture.registerDevice(token);
+    }
     return nativeRegisterDevice(token);
   }
 
   async login(phoneNumber: string): Promise<LoginState> {
+    if (isTelegramFixtureMode()) {
+      return this.fixture.login(phoneNumber);
+    }
     const state: NativeAuthState = await nativeRequestLoginCode(phoneNumber);
     return state.loginState;
   }
 
   async verifyCode(code: string): Promise<LoginState> {
+    if (isTelegramFixtureMode()) {
+      return this.fixture.verifyCode(code);
+    }
     const state: NativeAuthState = await nativeSubmitLoginCode(code);
     return state.loginState;
   }
 
   async password(password: string): Promise<LoginState> {
+    if (isTelegramFixtureMode()) {
+      return this.fixture.password(password);
+    }
     const state: NativeAuthState = await nativeSubmitPassword(password);
     return state.loginState;
   }
 
   async signOut(): Promise<boolean> {
     this.started = false;
+    if (isTelegramFixtureMode()) {
+      return this.fixture.signOut();
+    }
     return nativeSignOut();
   }
 
   async startSync(): Promise<void> {
+    if (isTelegramFixtureMode()) {
+      await this.fixture.startSync();
+      this.started = true;
+      return;
+    }
     Logger.info('TelegramBridge startSync: start');
     await nativeStartRuntime();
     this.started = true;
@@ -316,11 +351,21 @@ class TelegramBridge {
     if (!this.started) {
       return;
     }
+    if (isTelegramFixtureMode()) {
+      await this.fixture.stopSync();
+      this.started = false;
+      return;
+    }
     await nativeStopRuntime();
     this.started = false;
   }
 
   async reconnect(): Promise<boolean> {
+    if (isTelegramFixtureMode()) {
+      const authorized = await this.fixture.reconnect();
+      this.started = authorized;
+      return authorized;
+    }
     Logger.info('TelegramBridge reconnect: start');
     const state: NativeRuntimeState = await nativeReconnectRuntime();
     this.started = state.running;
@@ -329,10 +374,16 @@ class TelegramBridge {
   }
 
   async getMe(): Promise<NativeSeenChat> {
+    if (isTelegramFixtureMode()) {
+      return this.fixture.getMe();
+    }
     return nativeGetMe();
   }
 
   async getDialogs(offsetDate?: number, limit?: number): Promise<NativeDialogPage> {
+    if (isTelegramFixtureMode()) {
+      return this.fixture.getDialogs(offsetDate, limit);
+    }
     const result: NativeDialogLoadResult =
       await nativeLoadDialogs(new NativeDialogLoadRequestRecord(0, undefined, limit, NativeLoadSource.Cache));
     const page: NativeDialogPage = new NativeDialogPageRecord(result.dialogs, result.hasMore);
@@ -342,6 +393,9 @@ class TelegramBridge {
   }
 
   async getMessages(chatId: number, beforeMessageId?: number, limit?: number): Promise<NativeMessagePage> {
+    if (isTelegramFixtureMode()) {
+      return this.fixture.getMessages(chatId, beforeMessageId, limit);
+    }
     const result: NativeMessageLoadResult = await nativeLoadMessages(new NativeMessageLoadRequestRecord(
       chatId, limit, beforeMessageId, NativeMessageLoadType.Backward, NativeLoadSource.Cache));
     const page: NativeMessagePage = new NativeMessagePageRecord(result.chatId, result.messages, result.hasMore);
@@ -351,11 +405,19 @@ class TelegramBridge {
   }
 
   async loadChatsWithOffset(_lastMessageIds: Record<string, number>): Promise<void> {
+    if (isTelegramFixtureMode()) {
+      await this.fixture.startSync();
+      this.started = true;
+      return;
+    }
     await nativeStartRuntime();
     this.started = true;
   }
 
   async loadHistoryMessages(chatId: number, beforeMessageId?: number, limit?: number): Promise<NativeMessage[]> {
+    if (isTelegramFixtureMode()) {
+      return this.fixture.loadHistoryMessages(chatId, beforeMessageId, limit);
+    }
     const result: NativeMessageLoadResult = await nativeLoadMessages(new NativeMessageLoadRequestRecord(
       chatId, limit, beforeMessageId, NativeMessageLoadType.Backward, NativeLoadSource.Cache));
     return result.messages;
@@ -368,6 +430,9 @@ class TelegramBridge {
     medias?: NativeMediaInput[],
     onUploadProgress?: UploadProgressCallback,
   ): Promise<NativeMessage[]> {
+    if (isTelegramFixtureMode()) {
+      return this.fixture.sendMessage(chatId, text, replyTo, medias, onUploadProgress);
+    }
     if (onUploadProgress) {
       this.uploadProgressCallbacks.push(onUploadProgress);
     }
@@ -383,91 +448,164 @@ class TelegramBridge {
   }
 
   async getContacts(): Promise<NativeSeenChat[]> {
+    if (isTelegramFixtureMode()) {
+      return this.fixture.getContacts();
+    }
     return nativeGetContacts();
   }
 
   async resolvePeerByUsername(username: string): Promise<NativeSearchResult | undefined> {
+    if (isTelegramFixtureMode()) {
+      return this.fixture.resolvePeerByUsername(username);
+    }
     const result: NativeSearchResult | null | undefined = await nativeResolvePeerByUsername(username);
     return result ?? undefined;
   }
 
   async openChat(chatId: number): Promise<NativeSearchResult> {
+    if (isTelegramFixtureMode()) {
+      return this.fixture.openChat(chatId);
+    }
     return nativeOpenChat(chatId);
   }
 
   async searchKnownPeers(query: string, limit: number = 20): Promise<NativeSearchResult[]> {
+    if (isTelegramFixtureMode()) {
+      return this.fixture.searchKnownPeers(query, limit);
+    }
     const page: NativeSearchPage = await nativeSearchPeers(query, limit);
     return page.results;
   }
 
   async searchMessages(chatId: number, query: string, limit: number = 20, offsetId?: number): Promise<NativeSearchResult[]> {
+    if (isTelegramFixtureMode()) {
+      return this.fixture.searchMessages(chatId, query, limit, offsetId);
+    }
     const page: NativeSearchPage = await nativeSearchMessages(chatId, query, offsetId, limit);
     return page.results;
   }
 
   async searchAllMessages(query: string, limit: number = 20, offsetId?: number): Promise<NativeSearchResult[]> {
+    if (isTelegramFixtureMode()) {
+      return this.fixture.searchAllMessages(query, limit, offsetId);
+    }
     const page: NativeSearchPage = await nativeSearchMessages(undefined, query, offsetId, limit);
     return page.results;
   }
 
   async editMessage(chatId: number, messageId: number, text: string): Promise<NativeMessage> {
+    if (isTelegramFixtureMode()) {
+      return this.fixture.editMessage(chatId, messageId, text);
+    }
     return nativeEditMessage(chatId, messageId, text);
   }
 
   async deleteMessages(chatId: number, messageIds: number[]): Promise<ChatActionResult> {
+    if (isTelegramFixtureMode()) {
+      return this.fixture.deleteMessages(chatId, messageIds);
+    }
     return nativeDeleteMessages(chatId, messageIds);
   }
 
   async markChatRead(chatId: number): Promise<ChatActionResult> {
+    if (isTelegramFixtureMode()) {
+      return this.fixture.markChatRead(chatId);
+    }
     return nativeMarkChatRead(chatId);
   }
 
   async setChatPinned(chatId: number, pinned: boolean): Promise<ChatActionResult> {
+    if (isTelegramFixtureMode()) {
+      return this.fixture.setChatPinned(chatId, pinned);
+    }
     return nativeSetDialogFlags(chatId, new NativeDialogFlagsRecord(pinned, undefined, undefined));
   }
 
   async setChatMuted(chatId: number, muted: boolean): Promise<ChatActionResult> {
+    if (isTelegramFixtureMode()) {
+      return this.fixture.setChatMuted(chatId, muted);
+    }
     return nativeSetDialogFlags(chatId, new NativeDialogFlagsRecord(undefined, muted, undefined));
   }
 
   async setChatArchived(chatId: number, archived: boolean): Promise<ChatActionResult> {
+    if (isTelegramFixtureMode()) {
+      return this.fixture.setChatArchived(chatId, archived);
+    }
     return nativeSetDialogFlags(chatId, new NativeDialogFlagsRecord(undefined, undefined, archived));
   }
 
   async forwardMessages(fromChatId: number, toChatId: number, messageIds: number[]): Promise<Array<NativeMessage | undefined>> {
+    if (isTelegramFixtureMode()) {
+      return this.fixture.forwardMessages(fromChatId, toChatId, messageIds);
+    }
     const messages: NativeMessage[] = await nativeForwardMessages(fromChatId, toChatId, messageIds);
     return messages;
   }
 
   async downloadMediaFromMessage(chatId: number, messageId: number): Promise<string> {
+    if (isTelegramFixtureMode()) {
+      return this.fixture.downloadMediaFromMessage(chatId, messageId);
+    }
     const result: NativeMediaResult = await nativeDownloadMedia(chatId, messageId);
     return result.localPath;
   }
 
   async downloadProfilePhoto(chatId: number): Promise<string> {
+    if (isTelegramFixtureMode()) {
+      return this.fixture.downloadProfilePhoto(chatId);
+    }
     const result: NativeMediaResult = await nativeDownloadProfilePhoto(chatId);
     return result.localPath;
   }
 
   getProfilePhotoPathAndCount(chatId: number): ProfilePhotoPathAndCount {
+    if (isTelegramFixtureMode()) {
+      return this.fixture.getProfilePhotoPathAndCount(chatId);
+    }
     return nativeGetProfilePhotoPathAndCount(chatId);
   }
 
   async getChatPhotoThumb(chatId: number): Promise<number[] | undefined> {
+    if (isTelegramFixtureMode()) {
+      return this.fixture.getChatPhotoThumb(chatId);
+    }
     const thumb: number[] | null | undefined = await nativeGetChatPhotoThumb(chatId);
     return thumb ?? undefined;
   }
 
   async getParticipants(chatId: number): Promise<NativeParticipant[]> {
+    if (isTelegramFixtureMode()) {
+      return this.fixture.getParticipants(chatId);
+    }
     return nativeGetParticipants(chatId, undefined);
   }
 
   async registerPush(tokenType: number, token: string): Promise<string> {
+    if (isTelegramFixtureMode()) {
+      return this.fixture.registerPush(tokenType, token);
+    }
     return nativeRegisterPush(tokenType, token);
   }
 
   async unregisterPush(tokenType: number, token: string): Promise<string> {
+    if (isTelegramFixtureMode()) {
+      return this.fixture.unregisterPush(tokenType, token);
+    }
     return nativeUnregisterPush(tokenType, token);
+  }
+
+  private toFixtureEvents(events: TelegramBridgeEvents): TelegramFixtureEvents {
+    const fixtureEvents: TelegramFixtureEvents = new TelegramFixtureEvents();
+    fixtureEvents.onSeenChatCached = events.onSeenChatCached;
+    fixtureEvents.onChatUpdated = events.onChatUpdated;
+    fixtureEvents.onDialogsLoaded = events.onDialogsLoaded;
+    fixtureEvents.onMessagesLoaded = events.onMessagesLoaded;
+    fixtureEvents.onIncomingMessage = events.onIncomingMessage;
+    fixtureEvents.onEditedMessage = events.onEditedMessage;
+    fixtureEvents.onDeletedMessages = events.onDeletedMessages;
+    fixtureEvents.onReadState = events.onReadState;
+    return fixtureEvents;
   }
 
   private async replayMissedEvents(): Promise<void> {

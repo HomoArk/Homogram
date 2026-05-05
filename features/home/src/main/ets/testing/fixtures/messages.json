@@ -1,0 +1,399 @@
+{
+  "defaultIntervalSeconds": 60,
+  "threads": [
+    {
+      "chatId": 1001,
+      "startId": 1,
+      "startTimestamp": 1714890000,
+      "count": 48,
+      "senderIds": [1001, 9001],
+      "replyEvery": 6,
+      "entityEvery": 9,
+      "pinnedEvery": 31,
+      "seedTexts": [
+        "Welcome to the Homogram UITest fixture.",
+        "This chat is local, deterministic, and safe for repeated agent loops.",
+        "Tap, type, send, and inspect layout without Telegram auth.",
+        "The smoke path should keep this chat visible near the top."
+      ]
+    },
+    {
+      "chatId": 1002,
+      "startId": 100201,
+      "startTimestamp": 1714887200,
+      "count": 42,
+      "senderIds": [9101, 9102, 9103, 9001],
+      "replyEvery": 5,
+      "entityEvery": 8,
+      "pinnedEvery": 29,
+      "seedTexts": [
+        "The navigation rail should stay stable at md and lg breakpoints.",
+        "Composer, reply preview, and list scrolling are ready for harness checks.",
+        "I will verify it with a layout dump.",
+        "Fixture data should make regressions obvious during visual review."
+      ]
+    },
+    {
+      "chatId": 1003,
+      "startId": 100301,
+      "startTimestamp": 1714884400,
+      "count": 34,
+      "senderIds": [1003],
+      "replyEvery": 0,
+      "entityEvery": 7,
+      "pinnedEvery": 0,
+      "viewBase": 1200,
+      "forwardBase": 18,
+      "seedTexts": [
+        "Fixture build mode keeps real Telegram sessions untouched.",
+        "Use this channel as a smoke target for read-only flows.",
+        "Release notes should remain readable in dense channel rows.",
+        "Search should find radar, release, and fixture keywords."
+      ]
+    },
+    {
+      "chatId": 1004,
+      "startId": 100401,
+      "startTimestamp": 1714881600,
+      "count": 72,
+      "senderIds": [9111, 9112, 9113, 9001],
+      "replyEvery": 4,
+      "entityEvery": 10,
+      "pinnedEvery": 35,
+      "seedTexts": [
+        "Scrollback checkpoint reached after a long burst of messages.",
+        "Older rows should keep their height when the viewport settles.",
+        "History loading should return a stable slice before the requested message id.",
+        "The harness can verify long lists without waiting for network state."
+      ]
+    },
+    {
+      "chatId": 1005,
+      "startId": 100501,
+      "startTimestamp": 1714878800,
+      "count": 30,
+      "senderIds": [1005, 9001],
+      "replyEvery": 6,
+      "entityEvery": 0,
+      "pinnedEvery": 0,
+      "seedTexts": [
+        "Attachment copy is represented as text until media fixtures are added.",
+        "The media queue stays muted so unread counters remain predictable.",
+        "Download paths are deterministic for fixture-only message ids.",
+        "This thread is useful for compact composer checks."
+      ]
+    },
+    {
+      "chatId": 1006,
+      "startId": 100601,
+      "startTimestamp": 1714876000,
+      "count": 38,
+      "senderIds": [1006],
+      "replyEvery": 0,
+      "entityEvery": 5,
+      "pinnedEvery": 0,
+      "viewBase": 860,
+      "forwardBase": 12,
+      "seedTexts": [
+        "Search keyword alpha appears in this indexed fixture.",
+        "Search keyword beta appears with layout and message terms.",
+        "The search surface should find channel results and peer results.",
+        "Indexed fixtures keep message lookup deterministic."
+      ]
+    },
+    {
+      "chatId": 1007,
+      "startId": 100701,
+      "startTimestamp": 1714873200,
+      "count": 28,
+      "senderIds": [1007, 9001],
+      "replyEvery": 7,
+      "entityEvery": 6,
+      "pinnedEvery": 0,
+      "seedTexts": [
+        "Accessibility labels should stay readable after row updates.",
+        "Longer human text helps screenshots show typography issues.",
+        "Keyboard focus should not hide the final outgoing message.",
+        "This peer keeps concise names but descriptive message bodies."
+      ]
+    },
+    {
+      "chatId": 1008,
+      "startId": 100801,
+      "startTimestamp": 1714870400,
+      "count": 54,
+      "senderIds": [9121, 9122, 9123, 9001],
+      "replyEvery": 6,
+      "entityEvery": 9,
+      "pinnedEvery": 27,
+      "seedTexts": [
+        "Forum-like rows should preserve navigation and topic affordances.",
+        "Layout watch records density, spacing, and long text wrapping.",
+        "The agent should be able to scroll and return without state drift.",
+        "Repeated visual probes should see the same message order."
+      ]
+    },
+    {
+      "chatId": 1009,
+      "startId": 100901,
+      "startTimestamp": 1714867600,
+      "count": 26,
+      "senderIds": [1009, 9001],
+      "replyEvery": 0,
+      "entityEvery": 0,
+      "pinnedEvery": 0,
+      "seedTexts": [
+        "Offline cache notes remain archived by default.",
+        "Cached rows should hydrate from fixture data with no network.",
+        "Read state changes should clear counters deterministically.",
+        "This chat is intentionally quiet."
+      ]
+    },
+    {
+      "chatId": 1010,
+      "startId": 101001,
+      "startTimestamp": 1714864800,
+      "count": 44,
+      "senderIds": [9131, 9132, 9133, 9001],
+      "replyEvery": 5,
+      "entityEvery": 7,
+      "pinnedEvery": 0,
+      "seedTexts": [
+        "Push registration is skipped while fixture mode is active.",
+        "Local tokens keep the lifecycle path exercised without remote calls.",
+        "Muted state should appear in chat actions and remain stable.",
+        "Foreground refresh can run safely on this group."
+      ]
+    },
+    {
+      "chatId": 1011,
+      "startId": 101101,
+      "startTimestamp": 1714862000,
+      "count": 32,
+      "senderIds": [1011],
+      "replyEvery": 0,
+      "entityEvery": 8,
+      "pinnedEvery": 0,
+      "viewBase": 540,
+      "forwardBase": 7,
+      "seedTexts": [
+        "Migration notes describe bridge parity and UI exposure.",
+        "Native capability does not automatically mean surfaced behavior.",
+        "Fixture channels help review read-only message presentation.",
+        "Release snapshots should stay deterministic."
+      ]
+    },
+    {
+      "chatId": 1012,
+      "startId": 101201,
+      "startTimestamp": 1714859200,
+      "count": 46,
+      "senderIds": [9141, 9142, 9143, 9001],
+      "replyEvery": 5,
+      "entityEvery": 6,
+      "pinnedEvery": 32,
+      "seedTexts": [
+        "Theme checks need a mix of short and long rows.",
+        "Contrast snapshots should include incoming and outgoing bubbles.",
+        "Palette changes must not collapse message spacing.",
+        "The same fixture can be used in light and dark modes."
+      ]
+    },
+    {
+      "chatId": 1013,
+      "startId": 101301,
+      "startTimestamp": 1714856400,
+      "count": 24,
+      "senderIds": [1013, 9001],
+      "replyEvery": 6,
+      "entityEvery": 0,
+      "pinnedEvery": 0,
+      "seedTexts": [
+        "Error inbox captured a local retry path.",
+        "The retry button should not be needed in fixture mode.",
+        "Failure copy should remain concise in the bubble.",
+        "This conversation keeps edge-case wording visible."
+      ]
+    },
+    {
+      "chatId": 1014,
+      "startId": 101401,
+      "startTimestamp": 1714853600,
+      "count": 30,
+      "senderIds": [1014, 9001],
+      "replyEvery": 5,
+      "entityEvery": 6,
+      "pinnedEvery": 0,
+      "seedTexts": [
+        "A deliberately longer sentence checks row wrapping and preview truncation across compact widths.",
+        "Single chat names can be longer than usual and should still fit.",
+        "Message previews should not overlap timestamps or unread badges.",
+        "This fixture stresses text layout without exotic characters."
+      ]
+    },
+    {
+      "chatId": 1015,
+      "startId": 101501,
+      "startTimestamp": 1714850800,
+      "count": 40,
+      "senderIds": [9151, 9152, 9153, 9001],
+      "replyEvery": 4,
+      "entityEvery": 10,
+      "pinnedEvery": 0,
+      "seedTexts": [
+        "Input focus should land in the composer after tap-id.",
+        "The send icon should stay tappable after uiInput text.",
+        "Keyboard-driven flows need predictable chat contents.",
+        "The harness can type a message and verify it appears."
+      ]
+    },
+    {
+      "chatId": 1016,
+      "startId": 101601,
+      "startTimestamp": 1714848000,
+      "count": 36,
+      "senderIds": [1016],
+      "replyEvery": 0,
+      "entityEvery": 9,
+      "pinnedEvery": 0,
+      "viewBase": 980,
+      "forwardBase": 16,
+      "seedTexts": [
+        "Dense list channel keeps the dialog list populated below the fold.",
+        "Every row should retain a stable id for UITest lookup.",
+        "Unread counters and preview text should scan cleanly.",
+        "Channel entries help verify read-only surfaces."
+      ]
+    },
+    {
+      "chatId": 1017,
+      "startId": 101701,
+      "startTimestamp": 1714845200,
+      "count": 28,
+      "senderIds": [1017, 9001],
+      "replyEvery": 7,
+      "entityEvery": 0,
+      "pinnedEvery": 0,
+      "seedTexts": [
+        "Foreground resume should not duplicate fixture dialogs.",
+        "Multi-device QA messages exercise lifecycle re-entry.",
+        "The runtime can reconnect without a network session.",
+        "Dialog state should remain stable after launch."
+      ]
+    },
+    {
+      "chatId": 1018,
+      "startId": 101801,
+      "startTimestamp": 1714842400,
+      "count": 50,
+      "senderIds": [9161, 9162, 9163, 9001],
+      "replyEvery": 5,
+      "entityEvery": 5,
+      "pinnedEvery": 25,
+      "seedTexts": [
+        "Slash command text should render as ordinary fixture content.",
+        "Generated drafts can be sent without native upload work.",
+        "Composer bots provide frequent outgoing and incoming turns.",
+        "Command-like messages help search and formatting checks."
+      ]
+    },
+    {
+      "chatId": 1019,
+      "startId": 101901,
+      "startTimestamp": 1714839600,
+      "count": 52,
+      "senderIds": [1019, 9001],
+      "replyEvery": 2,
+      "entityEvery": 11,
+      "pinnedEvery": 0,
+      "seedTexts": [
+        "Reply chain fixtures keep reply targets close to the current message.",
+        "The preview should appear when a reply relationship is present.",
+        "Dense replies make threading regressions easier to see.",
+        "Outgoing replies should remain deterministic."
+      ]
+    },
+    {
+      "chatId": 1020,
+      "startId": 102001,
+      "startTimestamp": 1714836800,
+      "count": 58,
+      "senderIds": [9171, 9172, 9173, 9001],
+      "replyEvery": 4,
+      "entityEvery": 8,
+      "pinnedEvery": 28,
+      "seedTexts": [
+        "Release candidate review covers chat list, detail, and composer flow.",
+        "Pinned group rows should remain easy to find.",
+        "Build verification should include at least one long group history.",
+        "The fixture data set is intentionally larger than the smoke path needs."
+      ]
+    },
+    {
+      "chatId": 1021,
+      "startId": 102101,
+      "startTimestamp": 1714834000,
+      "count": 28,
+      "senderIds": [1021],
+      "replyEvery": 0,
+      "entityEvery": 7,
+      "pinnedEvery": 0,
+      "viewBase": 410,
+      "forwardBase": 5,
+      "seedTexts": [
+        "Storage probe paths are synthetic and local to fixture mode.",
+        "Download actions should return deterministic file locations.",
+        "Profile photo paths can be exercised without remote media.",
+        "Cache checks should not touch a real Telegram account."
+      ]
+    },
+    {
+      "chatId": 1022,
+      "startId": 102201,
+      "startTimestamp": 1714831200,
+      "count": 22,
+      "senderIds": [1022, 9001],
+      "replyEvery": 5,
+      "entityEvery": 0,
+      "pinnedEvery": 0,
+      "seedTexts": [
+        "Auth fixture confirms login bypass is local to test mode.",
+        "Phone, code, and password paths can keep stable ids.",
+        "The bridge returns logged-in state without server calls.",
+        "This chat is useful after sign-out experiments."
+      ]
+    },
+    {
+      "chatId": 1023,
+      "startId": 102301,
+      "startTimestamp": 1714828400,
+      "count": 44,
+      "senderIds": [9181, 9182, 9183, 9001],
+      "replyEvery": 6,
+      "entityEvery": 9,
+      "pinnedEvery": 0,
+      "seedTexts": [
+        "Notification review keeps muted-state copy visible.",
+        "Badges and unread counts should be deterministic.",
+        "Local alert text should not trigger remote push.",
+        "The chat list can show both muted and active rows."
+      ]
+    },
+    {
+      "chatId": 1024,
+      "startId": 102401,
+      "startTimestamp": 1714825600,
+      "count": 18,
+      "senderIds": [1024, 9001],
+      "replyEvery": 0,
+      "entityEvery": 0,
+      "pinnedEvery": 0,
+      "seedTexts": [
+        "Empty state lab stays intentionally small.",
+        "Low-activity peers still need previews and stable ids.",
+        "A smaller thread helps compare list behavior against busy chats.",
+        "The fixture remains deterministic after repeated launches."
+      ]
+    }
+  ]
+}

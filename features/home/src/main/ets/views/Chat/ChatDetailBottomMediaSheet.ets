@@ -79,7 +79,7 @@ export struct ChatDetailBottomMediaSheet {
     })
   }
 
-  // 单独的页签
+  // Standalone tab.
   @Builder
   tab(tabName: Resource, tabItem: number, tabIndex: number) {
     Row({ space: 20 }) {
@@ -139,11 +139,11 @@ export struct ChatDetailBottomMediaSheet {
       .backgroundColor('#F1F3F5')
       .animationDuration(this.animationDuration)
       .onChange((index: number) => {
-        this.currentIndex = index; // 监听索引index的变化，实现页签内容的切换。
+        this.currentIndex = index; // Listen for index changes and switch tab content.
         this.title = this.titleArray[index];
       })
       .onAnimationStart((index: number, targetIndex: number, event: TabsAnimationEvent) => {
-        // 切换动画开始时触发该回调。下划线跟着页面一起滑动，同时宽度渐变。
+        // Triggered when the switch animation starts. The underline slides with the page while its width animates.
         this.currentIndex = targetIndex;
         let targetIndexInfo = this.getTextInfo(targetIndex);
         this.startAnimateTo(this.animationDuration, targetIndexInfo.left, targetIndexInfo.width);
@@ -180,7 +180,7 @@ export struct ChatDetailBottomMediaSheet {
     .height('100%')
   }
 
-  // 获取组件大小、位置、平移缩放旋转及仿射矩阵属性信息。
+  // Get component size, position, translation, scale, rotation, and affine matrix attributes.
   private getTextInfo(index: number): Record<string, number> {
     let modePosition: componentUtils.ComponentInfo = componentUtils.getRectangleById(index.toString());
     return { 'left': px2vp(modePosition.windowOffset.x), 'width': px2vp(modePosition.size.width) };
@@ -188,13 +188,13 @@ export struct ChatDetailBottomMediaSheet {
 
   private startAnimateTo(duration: number, leftMargin: number, width: number) {
     animateTo({
-      // 动画时长
+      // Animation duration.
       duration: duration,
-      // 动画曲线
+      // Animation curve.
       curve: Curve.Linear,
-      // 播放次数
+      // Playback count.
       iterations: 1,
-      // 动画模式
+      // Animation mode.
       playMode: PlayMode.Normal,
       onFinish: () => {
         console.info('play end');

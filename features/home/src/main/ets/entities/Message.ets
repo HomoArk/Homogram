@@ -2,41 +2,41 @@
 import { IComparable } from '@ohos/base'
 
 /**
- * Sticker 淇℃伅
+ * Sticker information.
  */
 export class StickerInfo {
-  emoji?: string;         // 鍏宠仈鐨?emoji
-  isAnimated: boolean = false;    // 鏄惁涓哄姩鐢?sticker (TGS)
-  isVideo: boolean = false;       // 鏄惁涓鸿棰?sticker (WEBM)
-  mimeType?: string;      // MIME 绫诲瀷
-  fileSize?: number;      // 鏂囦欢澶у皬
-  width?: number;         // 瀹藉害
-  height?: number;        // 楂樺害
+  emoji?: string;         // Associated emoji.
+  isAnimated: boolean = false;    // Whether this is an animated sticker (TGS).
+  isVideo: boolean = false;       // Whether this is a video sticker (WEBM).
+  mimeType?: string;      // MIME type.
+  fileSize?: number;      // File size.
+  width?: number;         // Width.
+  height?: number;        // Height.
 }
 
 /**
- * 閫氱敤濯掍綋淇℃伅锛圥hoto銆丏ocument銆乂ideo 绛夛級
+ * Generic media information, such as photos, documents, and videos.
  */
 export class MediaInfo {
-  mimeType?: string;      // MIME 绫诲瀷
-  fileName?: string;      // 鍘熷鏂囦欢鍚?
-  fileSize?: number;      // 鏂囦欢澶у皬锛堝瓧鑺傦級
-  width?: number;         // 瀹藉害锛堝浘鐗?瑙嗛锛?
-  height?: number;        // 楂樺害锛堝浘鐗?瑙嗛锛?
-  duration?: number;      // 鏃堕暱锛堣棰?闊抽锛岀锛?
+  mimeType?: string;      // MIME type.
+  fileName?: string;      // Original file name.
+  fileSize?: number;      // File size in bytes.
+  width?: number;         // Width for images and videos.
+  height?: number;        // Height for images and videos.
+  duration?: number;      // Duration for videos and audio, in seconds.
 }
 
 /**
- * 娑堟伅鏍煎紡鍖栧疄浣擄紙绮椾綋銆佹枩浣撱€侀摼鎺ョ瓑锛?
+ * Message formatting entity, such as bold, italic, or links.
  */
 export class MessageEntity implements NativeMessageEntity {
   entityType: MessageEntityType;
-  offset: number;       // UTF-16 鍋忕Щ閲?
-  length: number;       // UTF-16 闀垮害
-  url?: string;         // TextUrl 鐨勯摼鎺?
-  userId?: number;      // MentionName 鐨勭敤鎴?ID
-  language?: string;    // Pre 鐨勮瑷€
-  customEmojiId?: number; // CustomEmoji 鐨?ID
+  offset: number;       // UTF-16 offset.
+  length: number;       // UTF-16 length.
+  url?: string;         // Link for TextUrl.
+  userId?: number;      // User ID for MentionName.
+  language?: string;    // Language for Pre.
+  customEmojiId?: number; // ID for CustomEmoji.
 
   constructor(
     entityType: MessageEntityType,
@@ -87,17 +87,17 @@ export class Message implements NativeMessage, IComparable<Message> {
   viewCount: number
   forwardCount: number
   replyCount: number
-  /// 娑堟伅鏍煎紡鍖栧疄浣擄紙绮椾綋銆佹枩浣撱€侀摼鎺ョ瓑锛? 瀛樺偍涓?JSON 瀛楃涓?
+  /// Message formatting entities stored as a JSON string.
   fmtEntitiesJson?: string
-  /// 杩愯鏃朵娇鐢ㄧ殑鏍煎紡鍖栧疄浣撴暟缁?
+  /// Formatting entities used at runtime.
   fmtEntities?: MessageEntity[]
-  /// Sticker 淇℃伅 - 瀛樺偍涓?JSON 瀛楃涓?
+  /// Sticker information stored as a JSON string.
   stickerInfoJson?: string
-  /// 杩愯鏃朵娇鐢ㄧ殑 Sticker 淇℃伅
+  /// Sticker information used at runtime.
   stickerInfo?: StickerInfo
-  /// 閫氱敤濯掍綋淇℃伅 - 瀛樺偍涓?JSON 瀛楃涓?
+  /// Generic media information stored as a JSON string.
   mediaInfoJson?: string
-  /// 杩愯鏃朵娇鐢ㄧ殑濯掍綋淇℃伅
+  /// Generic media information used at runtime.
   mediaInfo?: MediaInfo
 
   constructor(chatId: number, messageId: number, outgoing: boolean, pinned: boolean, senderId: number,
@@ -123,12 +123,12 @@ export class Message implements NativeMessage, IComparable<Message> {
     this.viewCount = 0;
     this.fmtEntities = fmtEntities;
     this.stickerInfo = stickerInfo;
-    // Note: JSON 搴忓垪鍖栫敱 fromNative 缁熶竴澶勭悊锛岀洿鎺ュ簭鍒楀寲 NAPI 鍘熷瀵硅薄
-    // 鏋勯€犲嚱鏁颁笉鍐嶅簭鍒楀寲锛岄伩鍏嶇被瀹炰緥搴忓垪鍖栭棶棰?
+    // Note: fromNative handles JSON serialization by serializing the raw NAPI object directly.
+    // The constructor no longer serializes class instances, avoiding class-instance serialization issues.
   }
 
   public static fromNative(nativeMessage: NativeMessage): Message {
-    // 杞崲鏍煎紡鍖栧疄浣?
+    // Convert formatting entities.
     let fmtEntities: MessageEntity[] | undefined;
     if (nativeMessage.fmtEntities && nativeMessage.fmtEntities.length > 0) {
       console.warn(`[FMTENTITIES] fromNative: converting ${nativeMessage.fmtEntities.length} entities from NAPI, first entity raw: ${JSON.stringify(nativeMessage.fmtEntities[0])}`);
@@ -159,8 +159,8 @@ export class Message implements NativeMessage, IComparable<Message> {
     msg.forwardCount = nativeMessage.forwardCount ?? 0;
     msg.replyCount = nativeMessage.replyCount ?? 0;
 
-    // 鐩存帴搴忓垪鍖栧師濮?NAPI 瀵硅薄锛岄伩鍏嶇被瀹炰緥搴忓垪鍖栭棶棰?
-    // 杩欐牱鍙互纭繚鏁版嵁鍦ㄦ暟鎹簱寰€杩旇繃绋嬩腑涓嶄涪澶?
+    // Serialize the raw NAPI object directly to avoid class-instance serialization issues.
+    // This keeps data intact during database round trips.
     if (nativeMessage.fmtEntities && nativeMessage.fmtEntities.length > 0) {
       msg.fmtEntitiesJson = JSON.stringify(nativeMessage.fmtEntities);
       console.warn(`[FMTENTITIES] fromNative: serialized ${nativeMessage.fmtEntities.length} entities from NAPI`);
@@ -180,7 +180,7 @@ export class Message implements NativeMessage, IComparable<Message> {
   }
 
   /**
-   * 浠庢暟鎹簱鍔犺浇鍚庯紝鍙嶅簭鍒楀寲 fmtEntities銆乻tickerInfo 鍜?mediaInfo
+   * Deserialize fmtEntities, stickerInfo, and mediaInfo after loading from the database.
    */
   public deserializeFmtEntities(): void {
     console.error(`============ [DESERIALIZE START] messageId=${this.messageId} ============`);
@@ -229,14 +229,14 @@ export class Message implements NativeMessage, IComparable<Message> {
   }
 
   /**
-   * 妫€鏌ユ秷鎭槸鍚﹀寘鍚牸寮忓寲鍐呭
+   * Check whether the message contains formatted content.
    */
   public hasFormatting(): boolean {
     return this.fmtEntities !== undefined && this.fmtEntities.length > 0;
   }
 
   /**
-   * 鑾峰彇鎸囧畾绫诲瀷鐨勬墍鏈夊疄浣?
+   * Get all entities of the specified type.
    */
   public getEntitiesByType(type: MessageEntityType): MessageEntity[] {
     if (!this.fmtEntities) return [];

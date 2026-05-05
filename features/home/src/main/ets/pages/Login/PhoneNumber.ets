@@ -33,6 +33,7 @@ export struct PhoneNumber {
             .height(256)
           Text($r('app.string.login_phone_hint')).margin({ top: 20 })
           TextInput({ placeholder: $r('app.string.login_phone_placeholder'), text: this.phone })
+            .id('hg-login-phone-input')
             .type(InputType.PhoneNumber)
             .placeholderFont({
               size: 28,
@@ -44,6 +45,7 @@ export struct PhoneNumber {
               this.phone = value;
             })
           Button($r('app.string.login_sign_in')).width(150).margin({ top: 20 })
+            .id('hg-login-phone-submit')
             .enabled(!this.isLoading)
             .onClick(async () => {
             if (this.phone.length == 0) {

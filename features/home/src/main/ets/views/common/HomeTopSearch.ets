@@ -13,87 +13,144 @@
  * limitations under the License.
  */
 
-import { BaseConstants, BreakpointConstants, CircleButton, StandardIcon } from '@ohos/base';
-import { HomeConstants } from '../../constants/HomeConstants';
+import { BaseConstants } from '@ohos/base';
+import {
+  ChatFolderBar,
+  HeaderGradientBlur,
+  HeaderIconButton,
+  HeaderSearchBar,
+  HeaderSearchInput,
+  HeaderTitleCapsule,
+  HeaderTextButton,
+  HdsHeaderMetrics,
+  rootHeaderTopPadding
+} from './HdsHeaderPrimitives';
 
-@Preview
 @Component
 export struct HomeTopSearch {
-  @StorageProp('currentBreakpoint') currentBreakpoint: string = BreakpointConstants.BREAKPOINT_SM;
-  @Prop title: string | Resource = "Message";
-  @Prop loading: boolean = false;
+  @StorageProp('topRectHeight') topRectHeight: number = 0;
+  @Prop title: ResourceStr = 'Chats';
+  @Link isCompact: boolean;
+  @Link isSearchExpanded: boolean;
+  @Link searchValue: string;
+  @Prop searchCollapseProgress: number = 0;
 
-  build() {
-    Flex({ alignItems: ItemAlign.Center, justifyContent: FlexAlign.SpaceBetween }) {
-      Column() {
-        Text(this.title)
-          .fontWeight(800)
-          .fontSize(BaseConstants.FONT_SIZE_TWENTY_FOUR)
-          .fontFamily("HarmonyOS Sans Condensed")
-          .width(BaseConstants.FULL_WIDTH)
-      }
-      .flexBasis(HomeConstants.SEARCH_TEXT_FLEX_BASIS)
-
-      if (this.currentBreakpoint === BreakpointConstants.BREAKPOINT_LG) {
-        Column() {
-          this.searchBar()
-        }
-        .flexBasis(HomeConstants.FLEX_BASIS_AUTO)
-          .margin({ right: $r('app.float.icon_margin_two') })
-      } else {
-        Blank()
-        StandardIcon({ icon: $r('app.media.ic_public_search') })
-          .margin({ right: $r('app.float.phone_icon_right') })
-      }
-      Column() {
-        // StandardIcon({ icon: $r('app.media.ic_public_add_norm') })
-        CircleButton({ icon: $r('sys.symbol.search_things') })
-          .flexBasis(HomeConstants.FLEX_BASIS_AUTO)
-      }
-      .margin({ right: $r('app.float.phone_icon_right') })
-    }
-    .expandSafeArea([SafeAreaType.SYSTEM])
-      .width(BaseConstants.FULL_WIDTH)
-      .backgroundBlurStyle(BlurStyle.Thin)
-      .backgroundColor(Color.Transparent)
-      .padding({
-        left: $r('app.float.phone_icon_left'),
-        top: /* deviceInfo.deviceType === BaseConstants.DEVICE_2IN1 ?
-          $r('app.float.zero') : */ $r('app.float.device_padding_top'),
-        bottom: $r('app.float.top_nav_pad_btm'),
-      })
+  @Builder
+  SearchInput() {
+    HeaderSearchInput({ searchValue: $searchValue })
   }
 
   @Builder
-  searchBar() {
+  HeaderRow() {
     Row() {
-      Stack({ alignContent: Alignment.Start }) {
-        TextInput({ placeholder: HomeConstants.SEARCH_TEXT_INPUT })
-          .placeholderFont({
-            size: $r('app.float.text_input_default_font'),
-            weight: FontWeight.Normal
-          })
-          .placeholderColor($r('app.color.text_input_default_color'))
-          .height($r('app.float.text_input_height'))
-          .fontSize(BaseConstants.FONT_SIZE_SIXTEEN)
-          .padding({
-            left: $r('app.float.text_input_left'),
-            right: $r('app.float.text_input_right')
-          })
-          .width(BaseConstants.FULL_WIDTH)
-          .enableKeyboardOnFocus(HomeConstants.ENABLE_KEY_BOARD_ON_FOCUS)
-          .backgroundColor($r('app.color.text_input_default_background_color'))
-          .caretColor($r('app.color.text_input_default_care_color'))
+      HeaderTextButton({ text: 'Edit' })
+        .width(96)
 
-        Image($r('app.media.ic_public_search'))
-          .width($r('app.float.small_icon_width'))
-          .height($r('app.float.small_icon_height'))
-          .margin({ left: $r('app.float.add_icon_left') })
-      }
-      .alignSelf(ItemAlign.Center)
+      HeaderTitleCapsule({
+        title: this.title,
+        capsuleWidth: BaseConstants.FULL_WIDTH,
+        capsuleHeight: HdsHeaderMetrics.ROOT_ACTION_SIZE,
+        titleFontSize: HdsHeaderMetrics.ROOT_TITLE_FONT_SIZE,
+      })
         .layoutWeight(BaseConstants.LAYOUT_WEIGHT_ONE)
+        .margin({ left: 8, right: 8 })
+
+      Row({ space: HdsHeaderMetrics.ROOT_ACTION_GAP }) {
+        HeaderIconButton({
+          icon: $r('sys.symbol.plus_square'),
+          buttonSize: HdsHeaderMetrics.ROOT_ACTION_SIZE,
+          iconSize: 22,
+        })
+      }
+      .width(96)
+      .justifyContent(FlexAlign.End)
     }
-    .justifyContent(FlexAlign.Center)
+    .alignItems(VerticalAlign.Center)
+    .width(BaseConstants.FULL_WIDTH)
+  }
+
+  @Builder
+  CollapsingSearchBar() {
+    Column() {
+      HeaderSearchBar({ placeholder: 'Search' })
+        .onClick(() => {
+          if (this.getSearchVisibleFraction() > 0.25) {
+            this.isSearchExpanded = true;
+          }
+        })
+    }
+    .width(BaseConstants.FULL_WIDTH)
+    .height(this.getCollapsedSearchHeight())
+    .opacity(this.getSearchVisibleFraction())
+    .scale({ x: 1, y: this.getSearchScaleY() })
+    .clip(true)
+    .margin({ top: this.getCollapsedSearchTopMargin() })
+  }
+
+  @Builder
+  ExpandedSearchRow() {
+    Row({ space: 10 }) {
+      this.SearchInput()
+      HeaderTextButton({ text: 'Cancel', fontSize: 16 })
+        .onClick(() => {
+          this.isSearchExpanded = false;
+          this.searchValue = '';
+        })
+    }
+    .alignItems(VerticalAlign.Center)
+    .width(BaseConstants.FULL_WIDTH)
+  }
+
+  build() {
+    Stack({ alignContent: Alignment.Top }) {
+      HeaderGradientBlur({ materialHeight: this.getTopGradientHeight() })
+
+      Column() {
+        if (this.isSearchExpanded) {
+          this.ExpandedSearchRow()
+        } else {
+          this.HeaderRow()
+
+          this.CollapsingSearchBar()
+
+          ChatFolderBar()
+            .margin({ top: HdsHeaderMetrics.ROOT_FOLDER_TOP_MARGIN })
+        }
+      }
       .width(BaseConstants.FULL_WIDTH)
+      .padding({
+        left: HdsHeaderMetrics.ROOT_HORIZONTAL_PADDING,
+        right: HdsHeaderMetrics.ROOT_HORIZONTAL_PADDING,
+        top: rootHeaderTopPadding(this.topRectHeight),
+        bottom: HdsHeaderMetrics.ROOT_BOTTOM_PADDING,
+      })
+    }
+    .expandSafeArea([SafeAreaType.SYSTEM])
+    .width(BaseConstants.FULL_WIDTH)
+    .backgroundColor(Color.Transparent)
+  }
+
+  private getNormalizedSearchProgress(): number {
+    return Math.min(1, Math.max(0, this.searchCollapseProgress));
+  }
+
+  private getSearchVisibleFraction(): number {
+    return 1 - this.getNormalizedSearchProgress();
+  }
+
+  private getCollapsedSearchHeight(): number {
+    return HdsHeaderMetrics.ROOT_SEARCH_HEIGHT * this.getSearchVisibleFraction();
+  }
+
+  private getCollapsedSearchTopMargin(): number {
+    return HdsHeaderMetrics.ROOT_SEARCH_TOP_MARGIN * this.getSearchVisibleFraction();
+  }
+
+  private getSearchScaleY(): number {
+    return Math.max(0.12, this.getSearchVisibleFraction());
+  }
+
+  private getTopGradientHeight(): number {
+    return rootHeaderTopPadding(this.topRectHeight) + HdsHeaderMetrics.ROOT_ACTION_SIZE + 20;
   }
 }

@@ -20,9 +20,9 @@ import photoAccessHelper from '@ohos.file.photoAccessHelper';
 
 @Component
 export struct ChatDetailBottomPhotoPicker {
-  // 组件初始化时设置参数信息
+  // Set parameter information during component initialization.
   pickerOptions: PickerOptions = new PickerOptions();
-  // 组件初始化完成后，可控制组件部分行为
+  // Controls selected component behavior after initialization completes.
   @State pickerController: PickerController = new PickerController();
   @State selectedUris: string[] = [];
   @State currentUri: string = '';
@@ -33,134 +33,134 @@ export struct ChatDetailBottomPhotoPicker {
 
   build() {
     PhotoPickerComponent({
-      // 设置组件选择选项实例
+      // Set the component picker options instance.
       pickerOptions: this.pickerOptions,
 
-      // 资源被选中回调，返回url信息（返回的uri权限是只读权限）
+      // Called when a resource is selected. The returned URI has read-only permission.
       onSelect: (uri: string): void => this.onSelect(uri),
 
-      // 资源被反选回调，返回url信息（返回的uri权限是只读权限）
+      // Called when a resource is deselected. The returned URI has read-only permission.
       onDeselect: (uri: string): void => this.onDeselect(uri),
 
       /**
-       * 资源被选中回调，返回资源的信息，以及选中方式
-       * ItemInfo（itemType, uri, mimeType, width, height, size, duration）
-       * ClickType（SELECTED：勾选， DESELECTED： 反选）
-       * return 返回值为true时才会给url授权（返回的uri权限是只读权限）
+       * Called when a resource is selected. Returns resource information and the selection method.
+       * ItemInfo includes itemType, uri, mimeType, width, height, size, and duration.
+       * ClickType: SELECTED means checked, DESELECTED means unchecked.
+       * A return value of true grants the URL read-only permission.
        */
       onItemClicked: (itemInfo: ItemInfo, clickType: ClickType): boolean => this.onItemClicked(itemInfo, clickType),
 
       /**
-       * 进入大图页回调,
-       * PhotoBrowserInfo (animatorParams: 动效)
+       * Called when entering the full-image page.
+       * PhotoBrowserInfo (animatorParams: animation effect).
        */
       onEnterPhotoBrowser: (photoBrowserInfo: PhotoBrowserInfo): boolean => this.onEnterPhotoBrowser(photoBrowserInfo),
 
       /**
-       * 退出大图页回调,
-       * PhotoBrowserInfo (animatorParams: 动效)
+       * Called when exiting the full-image page.
+       * PhotoBrowserInfo (animatorParams: animation effect).
        */
       onExitPhotoBrowser: (photoBrowserInfo: PhotoBrowserInfo): boolean => this.onExitPhotoBrowser(photoBrowserInfo),
 
       /**
-       * 切换大图页内容回调事件,
-       * PhotoBrowserInfo (animatorParams: 动效)
+       * Called when full-image page content changes.
+       * PhotoBrowserInfo (animatorParams: animation effect).
        */
       onPhotoBrowserChanged: (photoBrowserItemInfo: BaseItemInfo): boolean => this.onPhotoBrowserChanged(photoBrowserItemInfo),
 
-      // 接收到该回调后，便可通过pickerController相关接口向picker发送数据，在此之前不生效。
+      // After this callback, pickerController APIs can send data to the picker.
       onPickerControllerReady: (): void => this.onPickerControllerReady(),
 
-      // picker控制实例，应用可通过PickerController向picker组件发送数据，实现控制PhotoPickerComponent组件行为
+      // Picker controller instance. Apps can use PickerController to control PhotoPickerComponent behavior.
       pickerController: this.pickerController,
     })
   }
 
   aboutToAppear() {
-    // 设置picker宫格页数据类型
+    // Set the picker grid page data type.
     this.pickerOptions.MIMEType = photoAccessHelper.PhotoViewMIMETypes.IMAGE_TYPE;
 
-    // 是否展示搜索框，默认false
+    // Whether to show the search box. Default is false.
     this.pickerOptions.isSearchSupported = true;
 
-    // 是否支持拍照，默认false
+    // Whether photo capture is supported. Default is false.
     this.pickerOptions.isPhotoTakingSupported = true;
 
-    // 是否支持重复选择
+    // Whether repeated selection is supported.
     this.pickerOptions.isRepeatSelectSupported = false;
 
-    // 最大选择数量
-    this.pickerOptions.maxSelectNumber = 8; // 最大选择数量
+    // Maximum selection count.
+    this.pickerOptions.maxSelectNumber = 8; // Maximum selection count.
 
-    // 最大图片选择数量
-    this.pickerOptions.maxPhotoSelectNumber = 8; // 最大图片选择数量
+    // Maximum photo selection count.
+    this.pickerOptions.maxPhotoSelectNumber = 8; // Maximum photo selection count.
 
-    // 最大视频选择数量
-    this.pickerOptions.maxVideoSelectNumber = 8; // 最大视频选择数量
+    // Maximum video selection count.
+    this.pickerOptions.maxVideoSelectNumber = 8; // Maximum video selection count.
 
-    // 超出最大选择数量时
+    // Behavior when the maximum selection count is exceeded.
     this.pickerOptions.maxSelectedReminderMode = ReminderMode.TOAST;
 
-    // 设置大图背景色
+    // Set the full-image background color.
     this.pickerOptions.photoBrowserBackgroundColorMode = PickerColorMode.AUTO;
 
-    // 设置checkbox选中颜色
+    // Set the selected checkbox color.
     this.pickerOptions.checkBoxColor = '#000000';
 
-    // 设置checkbox文字颜色
+    // Set the checkbox text color.
     this.pickerOptions.checkboxTextColor = '#000000';
 
-    // 设置宫格页背景色
+    // Set the grid page background color.
     this.pickerOptions.backgroundColor = `#F6F6F6`;
 
-    // 设置选择模式，默认：MULTI_SELECT
+    // Set selection mode. Default: MULTI_SELECT.
     this.pickerOptions.selectMode = SelectMode.MULTI_SELECT;
   }
 
-  // 进入大图页回调
+  // Full-image page entry callback.
   private onEnterPhotoBrowser(photoBrowserInfo: PhotoBrowserInfo): boolean {
     console.info('onEnterPhotoBrowser' + JSON.stringify(photoBrowserInfo));
     return false;
   }
 
-  // 退出大图页回调
+  // Full-image page exit callback.
   private onExitPhotoBrowser(photoBrowserInfo: PhotoBrowserInfo): boolean {
     console.info('onExitPhotoBrowser' + JSON.stringify(photoBrowserInfo));
     return false;
   }
 
-  // 接收到该回调后，便可通过pickerController相关接口向picker发送数据，在此之前不生效。
+  // After this callback, pickerController APIs can send data to the picker.
   private onPickerControllerReady(): void {
     console.info('onPickerControllerReady');
   }
 
-  // 大图页图片切换回调事件处理
+  // Handles full-image page image change events.
   private onPhotoBrowserChanged(photoBrowserItemInfo: BaseItemInfo): boolean {
     console.info('onPhotoBrowserChanged' + JSON.stringify(photoBrowserItemInfo));
     this.currentUri = photoBrowserItemInfo.uri ?? '';
     return true;
   }
 
-  // 图片/视频被选中的回调，返回的url只有只读权限，不能用url直接去打开
+  // Called when an image or video is selected. The returned URL is read-only and cannot be opened directly.
   private onSelect(uri: string): void {
     if (uri) {
       this.selectedUris.push(uri)
     }
-    // 将uri保存起来，并保证切换不同的宫格页组件时保持选中项一致
+    // Save the URI and keep selections consistent when switching grid components.
     this.pickerOptions.preselectedUris = [...this.selectedUris];
     this.selectedMedias = [...this.selectedUris];
     this.selectedMediaCount = this.selectedUris.length;
     console.info('onSelect' + JSON.stringify(this.selectedUris));
   }
 
-  // 图片/视频被取消勾选的回调，返回的url只有只读权限，不能用url直接去打开
+  // Called when an image or video is unchecked. The returned URL is read-only and cannot be opened directly.
   private onDeselect(uri: string): void {
     if (uri) {
       this.selectedUris = this.selectedUris.filter((item: string) => {
         return item !== uri;
       })
     }
-    // 排除反勾选uri，并保证切换不同的宫格页组件时保持选中项一致
+    // Remove the unchecked URI and keep selections consistent when switching grid components.
     this.pickerOptions.preselectedUris = [...this.selectedUris];
     this.selectedMedias = [...this.selectedUris];
     this.selectedMediaCount = this.selectedUris.length;
@@ -168,10 +168,10 @@ export struct ChatDetailBottomPhotoPicker {
   }
 
   /**
-   * 图片/视频被选中回调，返回资源的信息，以及选中方式
-   * ItemInfo 图片、视频相关信息
-   * ClickType（SELECTED：勾选， DESELECTED： 反选）
-   * return 返回值为true时才会给url授权（返回的uri权限是只读权限）
+   * Called when an image or video is selected. Returns resource information and the selection method.
+   * ItemInfo contains image and video information.
+   * ClickType: SELECTED means checked, DESELECTED means unchecked.
+   * A return value of true grants the URL read-only permission.
    */
   private onItemClicked(itemInfo: ItemInfo, clickType: ClickType): boolean {
     if (!itemInfo) {
@@ -179,27 +179,27 @@ export struct ChatDetailBottomPhotoPicker {
     }
     let type: ItemType | undefined = itemInfo.itemType;
     let uri: string | undefined = itemInfo.uri;
-    if (type === ItemType.CAMERA) { // 点击相机item
+    if (type === ItemType.CAMERA) { // Clicked the camera item.
       console.info('onCameraClick');
       if (this.isBlock) {
         return false;
       }
-      // 返回true则拉起系统相机，若应用需要自行处理则返回false。
+      // Return true to open the system camera. Return false when the app handles it itself.
       return true;
-    } else if (type === ItemType.THUMBNAIL) { //点击图片、视频item（缩略图item）
-      if (clickType === ClickType.SELECTED) { //选中
+    } else if (type === ItemType.THUMBNAIL) { // Clicked an image or video thumbnail item.
+      if (clickType === ClickType.SELECTED) { // Selected.
         if (this.isBlock) {
           return false;
         }
-        // 将uri保存起来，并保证切换不同的宫格页组件时保持选中项一致
+        // Save the URI and keep selections consistent when switching grid components.
         if (uri) {
           this.selectedUris.push(uri)
           this.pickerOptions.preselectedUris = [...this.selectedUris];
           this.selectedMedias = [...this.selectedUris];
         }
-      } else { //反选
+      } else { // Deselected.
         if (uri) {
-          // 排除反勾选uri，并保证切换不同的宫格页组件时保持选中项一致
+          // Remove the unchecked URI and keep selections consistent when switching grid components.
           this.selectedUris = this.selectedUris.filter((item: string) => {
             return item !== uri;
           })

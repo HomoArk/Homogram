@@ -100,10 +100,10 @@ export struct ReplyToPreview {
   }
 
   /**
-   * 妫€鏌ユ秷鎭槸鍚﹀瓨鍦紝濡傛灉涓嶅瓨鍦ㄥ垯鍔犺浇鍘嗗彶娑堟伅
+   * Check whether the replied message exists, and load history if it does not.
    */
   private async checkAndLoadMessage(): Promise<void> {
-    // 閲嶆柊鑾峰彇娑堟伅锛屽洜涓哄彲鑳藉湪缁勪欢鍒涘缓鍚庢暟鎹凡鏇存柊
+    // Refresh the message because data may have changed after the component was created.
     this.message = this.messagesOfChatMap.get(this.currentChatId)?.getMessageById(this.replyToMessageId);
     
     if (this.message) {
@@ -123,24 +123,24 @@ export struct ReplyToPreview {
     try {
       const chatId = parseInt(this.currentChatId);
       
-      // 鍔犺浇鍖呭惈琚洖澶嶆秷鎭殑鍘嗗彶璁板綍
-      // 浠?replyToMessageId 寰€鍓嶅姞杞?50 鏉℃秷鎭?
+      // Load history that should include the replied message.
+      // Load 50 messages before replyToMessageId.
       const historyMessages: NativeMessage[] = await loadHistoryMessages(
         chatId,
-        this.replyToMessageId + 50, // 浠庤鍥炲娑堟伅涔嬪悗鐨勪綅缃紑濮嬪姞杞?
+        this.replyToMessageId + 50, // Start loading from after the replied message.
         50
       );
 
       if (historyMessages.length > 0) {
         Logger.debug(`ReplyToPreview: loaded ${historyMessages.length} history messages`);
         
-        // 灏嗘秷鎭坊鍔犲埌鏁版嵁婧?
+        // Add the loaded messages to the data source.
         const messageDataSource = this.messagesOfChatMap.get(this.currentChatId);
         if (messageDataSource) {
           const messages = historyMessages.map(nativeMsg => Message.fromNative(nativeMsg));
           messageDataSource.upsertMany(messages);
           
-          // 閲嶆柊鑾峰彇琚洖澶嶇殑娑堟伅
+          // Fetch the replied message again.
           this.message = messageDataSource.getMessageById(this.replyToMessageId);
           
           if (this.message) {

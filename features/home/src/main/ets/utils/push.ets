@@ -17,14 +17,14 @@ interface WebPushKey {
   auth: string
 };
 
-// Web Push 密钥配置
+// Web Push key configuration.
 const WEB_PUSH_KEYS: WebPushKey = {
   p256dh: 'BIo_GhL2d7bnPfWcXF-7ApQsa11I6jYZ6xRIBXCQzoEVJ3xRN56sreC9FDbeLMaTW9ubQrKEWeFuu-rUHz8PqCY',
   auth: '6vUzFvnXAa9_PeOK8s-5iQ'
 };
 
 /**
- * 生成推送 token
+ * Generate the push token.
  */
 function generatePushEndpoint(nickname: string, fake = false): string {
   return JSON.stringify({
@@ -34,7 +34,7 @@ function generatePushEndpoint(nickname: string, fake = false): string {
 }
 
 /**
- * 推送服务管理类
+ * Push service manager.
  */
 export class PushService {
   private context: common.UIAbilityContext;
@@ -44,7 +44,7 @@ export class PushService {
   }
 
   /**
-   * 加载保存的昵称
+   * Load the saved nickname.
    */
   async loadNickname(): Promise<string> {
     try {
@@ -57,7 +57,7 @@ export class PushService {
   }
 
   /**
-   * 保存昵称
+   * Save the nickname.
    */
   async saveNickname(nickname: string): Promise<boolean> {
     try {
@@ -72,7 +72,7 @@ export class PushService {
   }
 
   /**
-   * 保存最后注册时间
+   * Save the last registration time.
    */
   async saveLastRegisterTime(): Promise<boolean> {
     try {
@@ -87,7 +87,7 @@ export class PushService {
   }
 
   /**
-   * 获取最后注册时间
+   * Get the last registration time.
    */
   async getLastRegisterTime(): Promise<number> {
     try {
@@ -100,7 +100,7 @@ export class PushService {
   }
 
   /**
-   * 检查是否需要重新注册
+   * Check whether push registration needs to be refreshed.
    */
   async shouldRegisterPush(): Promise<boolean> {
     try {
@@ -124,7 +124,7 @@ export class PushService {
   }
 
   /**
-   * 注册推送
+   * Register push notifications.
    */
   async registerPush(nickname: string): Promise<string> {
     const token = generatePushEndpoint(nickname);
@@ -143,7 +143,7 @@ export class PushService {
   }
 
   /**
-   * 取消注册推送
+   * Unregister push notifications.
    */
   async unregisterPush(nickname: string): Promise<string> {
     let token = generatePushEndpoint(nickname);
@@ -153,7 +153,7 @@ export class PushService {
       Logger.warn(`PushService unregisterPush: ` + JSON.stringify(result));
       token = generatePushEndpoint(nickname, true);
       await nativeRegisterPush(10, token);
-      // 清除保存的数据
+      // Clear saved data.
       const dataPreferences = await preferences.getPreferences(this.context, 'push_settings');
       await dataPreferences.delete(PUSH_NICKNAME_KEY);
       await dataPreferences.delete(PUSH_LAST_REGISTER_TIME_KEY);
@@ -168,7 +168,7 @@ export class PushService {
   }
 
   /**
-   * 测试推送
+   * Test push notifications.
    */
   async testPush(nickname: string): Promise<string | false> {
     const testUrl = `https://gramonotify.dokodemodoor.workers.dev/tg/notify`;
@@ -206,7 +206,7 @@ export class PushService {
   }
 
   /**
-   * 自动注册推送（如果需要）
+   * Automatically register push notifications if needed.
    */
   async autoRegisterIfNeeded(): Promise<void> {
     try {

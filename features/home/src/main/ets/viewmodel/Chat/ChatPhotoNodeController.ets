@@ -1,5 +1,5 @@
 // CustomComponent.ets
-// 自定义占位节点，跨容器迁移能力
+// Custom placeholder node with cross-container migration support.
 import { BuilderNode, display, FrameNode, NodeController } from '@kit.ArkUI';
 import { Logger } from '@ohos/base';
 import { HomeConstants } from '../../constants/HomeConstants';
@@ -17,11 +17,11 @@ class ChatPhotoData {
 }
 
 /**
- * 生成圆形渐变背景字母图片
- * @param size 图片尺寸（宽高相等）
- * @param letter 要显示的字母
- * @param startColor 渐变起始颜色（RGB格式，例如：'#FF0000'）
- * @param endColor 渐变结束颜色（RGB格式，例如：'#0000FF'）
+ * Generate a circular gradient-background letter image.
+ * @param size Image size, with equal width and height.
+ * @param letter Letter to display.
+ * @param startColor Gradient start color in RGB format, for example '#FF0000'.
+ * @param endColor Gradient end color in RGB format, for example '#0000FF'.
  * @returns Promise<PixelMap>
  */
 function createCircleLetterPixelMap(

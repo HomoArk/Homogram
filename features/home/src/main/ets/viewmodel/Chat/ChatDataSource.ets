@@ -211,7 +211,7 @@ export class ChatDataSource implements IDataSource {
     }
   }
 
-  // 通知LazyForEach组件需要重载所有子组件
+  // Notify LazyForEach that all child components need to be reloaded.
   notifyDataReload(): void {
     Logger.debug('notifyDataReload');
     this.listeners.forEach(listener => {
@@ -219,7 +219,7 @@ export class ChatDataSource implements IDataSource {
     })
   }
 
-  // 通知LazyForEach组件需要在index对应索引处添加子组件
+  // Notify LazyForEach that a child component needs to be added at the given index.
   notifyDataAdd(index: number): void {
     Logger.debug('notifyDataAdd: ' + index);
     this.listeners.forEach(listener => {
@@ -227,7 +227,7 @@ export class ChatDataSource implements IDataSource {
     })
   }
 
-  // 通知LazyForEach组件在index对应索引处数据有变化，需要重建该子组件
+  // Notify LazyForEach that data at the given index changed and the child component needs to be rebuilt.
   notifyDataChange(index: number): void {
     Logger.debug('notifyDataChange: ' + index);
     this.listeners.forEach(listener => {
@@ -235,7 +235,7 @@ export class ChatDataSource implements IDataSource {
     })
   }
 
-  // 通知LazyForEach组件需要在index对应索引处删除该子组件
+  // Notify LazyForEach that the child component at the given index needs to be deleted.
   notifyDataDelete(index: number): void {
     Logger.debug('notifyDataDelete: ' + index);
     this.listeners.forEach(listener => {
@@ -243,7 +243,7 @@ export class ChatDataSource implements IDataSource {
     })
   }
 
-  // 通知LazyForEach组件将from索引和to索引处的子组件进行交换
+  // Notify LazyForEach that child components at the from and to indexes need to be swapped.
   notifyDataMove(from: number, to: number): void {
     Logger.debug('notifyDataMove: ' + from + ' ' + to);
     this.listeners.forEach(listener => {

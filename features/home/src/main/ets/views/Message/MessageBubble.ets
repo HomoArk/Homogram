@@ -31,15 +31,15 @@ enum DefaultMediaType {
 
 class DefaultMediaModel extends MediaModel {
   /**
-   * 类型
+   * Type.
    */
   type: DefaultMediaType = DefaultMediaType.IMAGE
   /**
-   * 资源图片
+   * Source image.
    */
   sourceSrc?: ResourceStr
   /**
-   * 缩略图
+   * Thumbnail.
    */
   thumbSrc?: ResourceStr
 
@@ -61,7 +61,7 @@ export struct MessageBubble {
   @Consume messagesOfChatMap: HashMap<string, MessageDataSource>;
   @Consume('pageInfo') pageInfo: NavPathStack;
   @State mediaPath: string = "";
-  @State decompressedMediaPath: string = ""; // 解压后的文件路径（TGS -> JSON）
+  @State decompressedMediaPath: string = ""; // Decompressed file path (TGS -> JSON).
   @State mediaLoaded: boolean = false;
   @State mediaLoadFailed: boolean = false;
   @State profilePhotoPath: string | undefined = undefined;
@@ -75,7 +75,7 @@ export struct MessageBubble {
   @Consume isScrollingDueToReplyToMessage: boolean;
   @Consume scrollToRepliedMessageIndex: number;
   @State lottieJson: string = "{}";
-  @State videoBase64: string = ""; // Base64 编码的视频数据
+  @State videoBase64: string = ""; // Base64-encoded video data.
   @Prop showUserName: boolean = true;
   private lottieController: LottieController = new LottieController();
   private stickerWebviewController: webview.WebviewController = new webview.WebviewController();
@@ -121,10 +121,10 @@ export struct MessageBubble {
     })
     .setLongPressListener((_item, index) => {
       console.log(`MessageBubble Media 长按了第${index + 1}个资源`);
-    })//TODO: 可以自定义id
+    })// TODO: A custom id can be used here.
     .setIdBuilder((_item, index) => {
       return `media_${index}`
-    })//TODO: 设置thumb可以优化一镜到底效果，可以注释对比效果
+    })// TODO: Set thumb to improve the shared-element transition effect.
     .setThumbBuilder((item, index) => {
       this.Media(item as DefaultMediaModel, index)
     });
@@ -167,15 +167,15 @@ export struct MessageBubble {
                   {
                     title: $r('app.string.send_message'),
                     action: () => {
-                      // 跳转到与该用户的聊天页面
+                      // Jump to the chat page with this user.
                       this.currentChatId = id.toString();
-                      // 确保该聊天的消息数据源存在
+                      // Ensure the message data source exists for this chat.
                       if (!this.messagesOfChatMap.hasKey(id.toString())) {
                         this.messagesOfChatMap.set(id.toString(), new MessageDataSource());
                       }
-                      // 确保 seenChatsMap 中有用户信息（用于显示标题）
+                      // Ensure seenChatsMap has user information for the title.
                       if (!this.seenChatsMap.hasKey(id.toString())) {
-                        // 创建一个临时的 SeenChat 对象
+                        // Create a temporary SeenChat object.
                         const tempSeenChat = new SeenChat(
                           id,
                           ChatType.User,
@@ -259,13 +259,13 @@ export struct MessageBubble {
                       ListItem() {
                         this.Media(item, index)
                       }
-                      //TODO: 设置id，不然不会显示一镜到底效果
+                      // TODO: Set an id, otherwise the shared-element transition will not appear.
                       .id(this.mediaPreviewOptions.idBuilder(item, index))
-                        //TODO: 如果列表数据模型和mediaPreview的数据模型不一致，可以自己设置，不过要和上面的`setIdBuilder`中id一致
+                        // TODO: Set this manually when list and media preview data models differ; keep it aligned with setIdBuilder above.
                         .id(`media_${index}`)
                         // .aspectRatio(1)
                         .clickEffect({ level: ClickEffectLevel.MIDDLE, scale: 0.8 })
-                        //TODO: 仿微信那种资源在预览时原始资源隐藏显示
+                        // TODO: Hide the original resource while previewing, similar to WeChat.
                         .visibility(index == this.mediaPreviewIndex ? Visibility.Hidden : Visibility.Visible)
                         .onClick(() => {
                           Logger.debug("MessageBubble Media onClick: " + index);
@@ -294,18 +294,18 @@ export struct MessageBubble {
                   }
                 }
 
-                // Video 显示（Document 类型且 MIME 类型为 video/*）
+                // Show video for document messages with a video/* MIME type.
                 if (this.message?.mediaType === MediaType.Document &&
                   this.message?.mediaInfo?.mimeType?.startsWith('video/')) {
                   this.VideoView()
                 }
 
-                // Sticker 显示
+                // Show sticker.
                 if (this.message?.mediaType === MediaType.Sticker) {
                   this.StickerView()
                 }
 
-                // 其他文档类型显示（音频、文档等）
+                // Show other document types, such as audio and generic files.
                 if (this.message?.mediaType === MediaType.Document &&
                   !this.message?.mediaInfo?.mimeType?.startsWith('video/')) {
                   this.DocumentView()
@@ -398,7 +398,7 @@ export struct MessageBubble {
         new DefaultMediaModel(this.mediaPath, this.mediaPath)
       ];
     }
-    // 构建 StyledString 用于富文本渲染
+    // Build StyledString for rich-text rendering.
     console.warn(`[FMTENTITIES] MessageBubble messageId=${this.message?.messageId} || count: ${this.message?.fmtEntities?.length ??
       0} || text: "${this.message?.text?.substring(0, 50)}"`);
     if (this.message?.fmtEntities && this.message.fmtEntities.length > 0) {
@@ -408,7 +408,7 @@ export struct MessageBubble {
   }
 
   /**
-   * 根据 fmtEntities 构建 StyledString 用于富文本显示
+   * Build StyledString from fmtEntities for rich-text display.
    */
   private buildStyledString(): void {
     const text = this.message?.text ?? '';
@@ -420,7 +420,7 @@ export struct MessageBubble {
 
     const entities = this.message?.fmtEntities;
     if (!entities || entities.length === 0) {
-      // 没有格式化实体，不使用 StyledString，直接使用普通文本
+      // No formatting entities: render regular text without StyledString.
       this.styledString = undefined;
       console.warn(`[FMTENTITIES] buildStyledString: no entities for message ${this.message?.messageId}`);
       return;
@@ -429,10 +429,10 @@ export struct MessageBubble {
     console.warn(`[FMTENTITIES] buildStyledString: creating StyledString for message ${this.message?.messageId}`);
     console.warn(`[FMTENTITIES] buildStyledString: entities count=${entities.length}, entities: ${JSON.stringify(entities)}`);
 
-    // 创建可变属性字符串
+    // Create a mutable styled string.
     const mutableStyledString = new MutableStyledString(text);
 
-    // 遍历所有格式化实体并应用样式
+    // Apply styles for all formatting entities.
     for (let i = 0; i < entities.length; i++) {
       const entity = entities[i];
       try {
@@ -483,12 +483,12 @@ export struct MessageBubble {
           Logger.debug(`Video started playing: ${this.mediaPath}`);
         })
 
-      // 加载状态
+      // Loading state.
       if (!this.mediaLoaded && !this.mediaLoadFailed) {
         Loading()
       }
 
-      // 错误状态
+      // Error state.
       if (this.mediaLoadFailed) {
         Column() {
           Text($r('app.string.load_failed'))
@@ -511,10 +511,10 @@ export struct MessageBubble {
   @Builder
   StickerView() {
     Stack() {
-      // 智能判断：优先使用 stickerInfo，如果没有则从文件路径推断
+      // Prefer stickerInfo when available, then infer from the file path.
       if ((this.message?.stickerInfo?.isAnimated || this.mediaPath.endsWith('.tgs')) && this.lottieJson.length > 7) {
-        // 动画 Sticker (TGS 格式 - Lottie)
-        // TGS 文件已解压为 JSON
+        // Animated sticker (TGS format - Lottie).
+        // The TGS file has been decompressed to JSON.
         Lottie({
           autoPlay: true,
           controller: this.lottieController,
@@ -524,7 +524,7 @@ export struct MessageBubble {
           .width(160)
           .height(160)
       } else if (this.message?.stickerInfo?.isVideo || this.mediaPath.endsWith('.webm')) {
-        // 视频 Sticker (WEBM) - 使用 Web 组件显示
+        // Video sticker (WEBM), displayed with the Web component.
         Web({
           src: 'about:blank',
           controller: this.stickerWebviewController,
@@ -540,11 +540,11 @@ export struct MessageBubble {
           .fileAccess(true)
           .onAppear(() => {
             try {
-              // 加载包含 video 标签的 HTML，使用 file:// 协议
+              // Load HTML that contains a video tag through the file:// protocol.
               if (this.mediaPath && this.mediaLoaded) {
                 Logger.debug(`[ARKWEB] Loading video from: ${this.mediaPath}`);
                 const html = this.generateStickerVideoHtml();
-                // 使用 loadData 加载 HTML，启用文件访问
+                // Load HTML with loadData and enable file access.
                 this.stickerWebviewController.loadData(
                   html,
                   'text/html',
@@ -558,7 +558,7 @@ export struct MessageBubble {
             }
           })
       } else {
-        // 静态 Sticker (WEBP)
+        // Static sticker (WEBP).
         Image("file://" + this.mediaPath)
           .width(150)
           .height(150)
@@ -567,12 +567,12 @@ export struct MessageBubble {
           .alt(this.message?.stickerInfo?.emoji ?? "Sticker")
       }
 
-      // 加载状态
+      // Loading state.
       if (!this.mediaLoaded && !this.mediaLoadFailed) {
         Loading()
       }
 
-      // 错误状态
+      // Error state.
       if (this.mediaLoadFailed) {
         Column() {
           Text($r('app.string.load_failed'))
@@ -597,7 +597,7 @@ export struct MessageBubble {
   DocumentView() {
     Column() {
       Row() {
-        // 文件图标
+        // File icon.
         Text() {
           if (this.message?.mediaInfo?.mimeType?.startsWith('audio/')) {
             SymbolSpan($r('sys.symbol.music_fill'))
@@ -620,7 +620,7 @@ export struct MessageBubble {
         .fontSize(40)
           .margin({ right: 12 })
 
-        // 文件信息
+        // File information.
         Column() {
           Text(this.message?.mediaInfo?.fileName ?? '未知文件')
             .fontSize(BaseConstants.FONT_SIZE_FOURTEEN)
@@ -648,8 +648,8 @@ export struct MessageBubble {
   @Builder
   MessageContent() {
     if (this.styledString && this.message?.text && this.message.text.length > 0) {
-      // 使用 StyledString 渲染富文本
-      // 先显示原始文本，然后通过 controller 应用样式
+      // Render rich text with StyledString.
+      // Show raw text first, then apply styles through the controller.
       Text(this.message.text, { controller: this.textController })
         .fontSize(BaseConstants.FONT_SIZE_SIXTEEN)
         .fontFamily(BaseConstants.FONT_FAMILY_NORMAL)
@@ -659,7 +659,7 @@ export struct MessageBubble {
         .copyOption(CopyOptions.LocalDevice)
         .alignSelf(ItemAlign.Start)
         .onAppear(() => {
-          // 延迟执行以确保布局完成
+          // Delay until layout is ready.
           setTimeout(() => {
             if (this.styledString) {
               try {
@@ -668,10 +668,10 @@ export struct MessageBubble {
                 Logger.error(`Failed to set styled string: ${e}`);
               }
             }
-          }, 16); // 等待一帧
+          }, 16); // Wait one frame.
         })
     } else {
-      // 普通文本渲染
+      // Regular text rendering.
       Text(this.message?.text)
         .fontSize(BaseConstants.FONT_SIZE_SIXTEEN)
         .fontFamily(BaseConstants.FONT_FAMILY_NORMAL)
@@ -730,10 +730,10 @@ export struct MessageBubble {
     this.mediaLoaded = false;
     this.mediaLoadFailed = false;
 
-    // 根据 mediaInfo 或 stickerInfo 确定文件扩展名
-    let extension = ".jpg"; // 默认扩展名
+    // Determine the file extension from mediaInfo or stickerInfo.
+    let extension = ".jpg"; // Default extension.
 
-    // Sticker 类型优先使用 stickerInfo 判断
+    // Prefer stickerInfo for sticker media.
     if (this.message?.mediaType === MediaType.Sticker) {
       if (this.message?.stickerInfo) {
         if (this.message.stickerInfo.isVideo) {
@@ -744,7 +744,7 @@ export struct MessageBubble {
           extension = ".webp";
         }
       } else if (this.message?.mediaInfo?.mimeType) {
-        // 备用方案：从 mediaInfo 的 mimeType 判断
+        // Fallback: infer from mediaInfo.mimeType.
         const mime = this.message.mediaInfo.mimeType;
         if (mime === 'video/webm' || mime.startsWith('video/')) {
           extension = ".webm";
@@ -757,10 +757,10 @@ export struct MessageBubble {
         extension = ".webp";
       }
     } else if (this.message?.mediaInfo?.mimeType) {
-      // 使用 mediaInfo 中的 MIME 类型
+      // Use the MIME type from mediaInfo.
       extension = this.getExtensionFromMimeType(this.message.mediaInfo.mimeType);
     } else if (this.message?.mediaInfo?.fileName) {
-      // 使用文件名中的扩展名
+      // Use the extension from the file name.
       extension = this.getExtensionFromFileName(this.message.mediaInfo.fileName);
     }
 
@@ -769,7 +769,7 @@ export struct MessageBubble {
 
     // download the media if not exists
     try {
-      // 对于 Sticker 类型，如果文件不存在，尝试其他扩展名
+      // For stickers, try alternative extensions when the file does not exist.
       if (!fs.accessSync(this.mediaPath) && this.message?.mediaType === MediaType.Sticker) {
         const basePath = BaseConstants.BASE_DIR + this.message?.chatId.toString() + "/" + this.message?.messageId.toString();
         const alternatives = ['.webm', '.tgs', '.webp'];
@@ -788,7 +788,7 @@ export struct MessageBubble {
         }
 
         if (found) {
-          // 更新 lottieJson 如果找到了 .tgs 文件
+          // Update lottieJson when a .tgs file is found.
           if (extension === '.tgs') {
             const jsonPath = this.mediaPath.replace(".tgs", ".json");
             if (fs.accessSync(jsonPath)) {
@@ -814,7 +814,7 @@ export struct MessageBubble {
               }
             }
           }
-          // 对于其他类型，直接标记为已加载
+          // For other types, mark the media as loaded directly.
           this.mediaLoaded = true;
           return;
         }
@@ -830,14 +830,14 @@ export struct MessageBubble {
           Logger.info(`[MEDIA] Downloading media: chatId=${chatId}, messageId=${messageId}`);
           const path = await downloadMediaFromMessage(chatId, messageId);
           this.mediaPath = path;
-          // 验证文件是否存在
+          // Verify that the file exists.
           if (fs.accessSync(path)) {
             const stat = fs.statSync(path);
             Logger.warn(`[MEDIA] File downloaded successfully, size: ${stat.size} bytes`);
           } else {
             Logger.error(`[MEDIA] Downloaded file not found: ${path}`);
           }
-          // 如果是 TGS 文件，需要解压为 JSON
+          // TGS files need to be decompressed to JSON.
           if (extension === ".tgs") {
             await this.decompressTgsFile(path);
           } else {
@@ -846,16 +846,16 @@ export struct MessageBubble {
         } catch (error) {
           Logger.error(`[MEDIA] Download failed: ${error}`);
           this.mediaLoadFailed = true;
-          throw new Error(`Download failed: ${error}`); // 抛出 Error 对象
+          throw new Error(`Download failed: ${error}`); // Throw an Error object.
         }
       } else {
-        // 如果是 TGS 文件，检查是否已解压
+        // For TGS files, check whether they have already been decompressed.
         if (extension === ".tgs") {
           const jsonPath = this.mediaPath.replace(".tgs", ".json");
           if (fs.accessSync(jsonPath)) {
             this.decompressedMediaPath = jsonPath;
 
-            // 读取 JSON 文件内容
+            // Read JSON file content.
             try {
               const file = fs.openSync(jsonPath, fs.OpenMode.READ_ONLY);
               const stat = fs.statSync(jsonPath);
@@ -863,7 +863,7 @@ export struct MessageBubble {
               fs.readSync(file.fd, buffer);
               fs.closeSync(file);
 
-              // 转换为字符串
+              // Convert to string.
               const bytes = new Uint8Array(buffer);
               let jsonContent = '';
               for (let i = 0; i < bytes.length; i++) {
@@ -889,8 +889,8 @@ export struct MessageBubble {
   }
 
   /**
-   * 解压 TGS 文件为 JSON
-   * TGS 文件是 gzip 压缩的 Lottie JSON 动画
+   * Decompress a TGS file to JSON.
+   * TGS files are gzip-compressed Lottie JSON animations.
    */
   private async decompressTgsFile(tgsPath: string): Promise<void> {
     const jsonPath = tgsPath.replace(".tgs", ".json");
@@ -899,7 +899,7 @@ export struct MessageBubble {
       const checksum = await zlib.createGZip();
       await checksum.gzopen(tgsPath, "rb");
 
-      // 预分配一个足够大的缓冲区（TGS 文件通常小于 1MB）
+      // Preallocate a large enough buffer. TGS files are usually smaller than 1 MB.
       const bufferSize = 1024 * 1024; // 1MB
       const buffer = new ArrayBuffer(bufferSize);
       const bytesRead = await checksum.gzread(buffer);
@@ -932,16 +932,16 @@ export struct MessageBubble {
   }
 
   /**
-   * 判断是否应该隐藏气泡背景
-   * Sticker 和无文本的视频不显示气泡
+   * Check whether the bubble background should be hidden.
+   * Stickers and videos without text do not show bubbles.
    */
   private shouldHideBubble(): boolean {
-    // Sticker 总是无气泡
+    // Stickers never show bubbles.
     if (this.message?.mediaType === MediaType.Sticker) {
       return true;
     }
 
-    // 视频：如果没有文本，则不显示气泡
+    // Videos without text do not show bubbles.
     if (this.message?.mediaType === MediaType.Document &&
       this.message?.mediaInfo?.mimeType?.startsWith('video/')) {
       const hasText = this.message?.text && this.message.text.trim().length > 0;
@@ -952,7 +952,7 @@ export struct MessageBubble {
   }
 
   /**
-   * 从 MIME 类型推断文件扩展名
+   * Infer the file extension from the MIME type.
    */
   private getExtensionFromMimeType(mimeType: string): string {
     const mimeMap: Record<string, string> = {
@@ -976,12 +976,12 @@ export struct MessageBubble {
       'application/x-rar-compressed': '.rar',
     };
 
-    // 直接匹配
+    // Direct match.
     if (mimeMap[mimeType]) {
       return mimeMap[mimeType];
     }
 
-    // 按前缀匹配
+    // Prefix match.
     if (mimeType.startsWith('video/')) {
       return '.mp4';
     }
@@ -992,17 +992,17 @@ export struct MessageBubble {
       return '.jpg';
     }
 
-    return '.bin'; // 未知类型
+    return '.bin'; // Unknown type.
   }
 
   /**
-   * 从文件名中提取扩展名
+   * Extract the extension from a file name.
    */
   private getExtensionFromFileName(fileName: string): string {
     const parts = fileName.split('.');
     if (parts.length > 1) {
       const ext = parts[parts.length - 1];
-      // 验证扩展名长度合理
+      // Validate that the extension length is reasonable.
       if (ext.length > 0 && ext.length < 10) {
         return '.' + ext;
       }
@@ -1011,7 +1011,7 @@ export struct MessageBubble {
   }
 
   /**
-   * 格式化文件大小
+   * Format the file size.
    */
   private formatFileSize(bytes: number): string {
     if (bytes === 0) return '0 B';
@@ -1024,9 +1024,9 @@ export struct MessageBubble {
 
 
   /**
-   * 生成用于显示视频 sticker 的 HTML 内容
-   * 针对 512x512 的 WebM sticker 优化
-   * 使用 file:// 协议加载本地视频
+   * Generate HTML used to display video stickers.
+   * Optimized for 512x512 WebM stickers.
+   * Load local video through the file:// protocol.
    */
   private generateStickerVideoHtml(): string {
     const videoPath = this.mediaPath;

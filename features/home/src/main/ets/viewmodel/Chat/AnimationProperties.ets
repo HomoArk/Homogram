@@ -1,5 +1,5 @@
 // AnimationProperties.ets
-// 一镜到底转场动画封装
+// Shared-element transition animation wrapper.
 import { componentUtils, curves } from '@kit.ArkUI';
 import { RectInfoInPx } from '@ohos/base';
 import { WindowUtil } from '@ohos/base';
@@ -12,9 +12,9 @@ const DEVICE_BORDER_RADIUS: number = 34;
 @Observed
 class AnimationProperties {
   public isExpandPageShow: boolean = false;
-  // 控制组件是否响应点击事件
+  // Controls whether the component responds to click events.
   public isEnabled: boolean = true;
-  // 展开卡片的序号
+  // Expanded card index.
   public curIndex: number = -1;
   public translateX: number = 0;
   public translateY: number = 0;
@@ -23,20 +23,20 @@ class AnimationProperties {
   public changedHeight: boolean = false;
   private calculatedTranslateX: number = 0;
   private calculatedTranslateY: number = 0;
-  // 设置卡片展开后相对父组件的位置
+  // Position of the expanded card relative to the parent component.
   private expandTranslateX: number = 0;
   private expandTranslateY: number = 0;
 
   public expandAnimation(index: number): void {
-    // 记录展开态卡片的序号
+    // Record the expanded card index.
     if (index != undefined) {
       this.curIndex = index;
     }
-    // 计算折叠态卡片相对父组件的位置
+    // Calculate the collapsed card position relative to the parent component.
     this.calculateData(index.toString());
-    // 展开态卡片上树
+    // Mount the expanded card.
     this.isExpandPageShow = true;
-    // 卡片展开的属性动画
+    // Property animation for expanding the card.
     animateTo({
       curve: curves.springMotion(0.6, 0.9)
     }, () => {
@@ -46,7 +46,7 @@ class AnimationProperties {
     })
   }
 
-  // 获取需要跨节点迁移的组件的位置，及迁移前后节点的公共父节点的位置，用以计算做动画组件的动画参数
+  // Get the migrating component position and the common parent node positions before and after migration to calculate animation parameters.
   public calculateData(key: string): void {
     let clickedImageInfo = this.getRectInfoById(key);
     let rootStackInfo = this.getRectInfoById('rootStack');
@@ -56,7 +56,7 @@ class AnimationProperties {
     this.calculatedTranslateY = px2vp(rootStackInfo.top - clickedImageInfo.top) + this.expandTranslateY;
   }
 
-  // 根据组件的id获取组件的位置信息
+  // Get component position information by component id.
   private getRectInfoById(id: string): RectInfoInPx {
     let componentInfo: componentUtils.ComponentInfo = componentUtils.getRectangleById(id);
 

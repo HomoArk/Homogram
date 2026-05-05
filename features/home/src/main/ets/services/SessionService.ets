@@ -1,6 +1,7 @@
 import { common } from '@kit.AbilityKit';
 import { Logger } from '@ohos/base';
 import { telegramBridge, LoginState, NativeSeenChat } from '../bridge/TelegramBridge';
+import { isTelegramFixtureMode } from '../testing/TestMode';
 import { autoRegisterPushIfNeeded } from '../utils';
 import { telegramSyncService } from './TelegramSyncService';
 
@@ -37,14 +38,16 @@ class SessionService {
     await telegramSyncService.refreshChats();
     Logger.info('SessionService onAuthorized: get self profile');
     const me = await this.getMe();
-    await autoRegisterPushIfNeeded(context);
+    if (!isTelegramFixtureMode()) {
+      await autoRegisterPushIfNeeded(context);
+    }
     await telegramSyncService.start();
     return me;
   }
 
   async onForeground(context: common.UIAbilityContext): Promise<boolean> {
     const authorized = await telegramSyncService.reconnectAndStart();
-    if (authorized) {
+    if (authorized && !isTelegramFixtureMode()) {
       await autoRegisterPushIfNeeded(context);
     }
     return authorized;

@@ -27,8 +27,11 @@ This file applies to the `E:\code\Homogram` workspace.
 - Before building the HAP, rebuild the Rust library if native code or its ArkTS bindings changed.
 - Do not introduce too much defensive logic. Instead, think in-depth and design carefully to ensure the code quality and correctness in a structural way.
 - Correctness and readability take priority over preserving unused compatibility wrappers.
+- Use English only for code comments. Translate or rewrite any touched non-English comments into English.
 - For ArkTS/ArkUI UI edits, use HDS controls from `@kit.UIDesignKit` instead of legacy ArkUI widgets whenever the current SDK exposes an HDS equivalent. Do not add new legacy widgets or leave touched legacy widgets in place when an HDS counterpart exists.
 - For tabs specifically, use `HdsTabs` and `HdsTabsController` instead of `Tabs` and `TabsController`.
+- On API 23, do not wrap custom `@Component` rows or pure spacer rows in `HdsListItem.customItemBuilder`; the HDS runtime may call those builders as plain functions and crash. Prefer HDS for the visible row body, such as `HdsListItemCard`, while keeping native `ListItem` as the list container when the row body is a custom component.
+- When passing component `@Builder` methods into HDS custom slots, do not pass bare references such as `this.AvatarBuilder`. Wrap them in arrow callbacks, for example `() => { this.AvatarBuilder(); }`, so the HDS runtime does not lose the component instance.
 - If an HDS API exists only in a newer HarmonyOS SDK than this checkout targets, document the version mismatch and avoid adding uncompilable calls.
 
 ## Native Build Flow

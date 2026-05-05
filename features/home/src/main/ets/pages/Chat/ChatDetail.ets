@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,15 @@ import { ChatDataSource } from '../../viewmodel/Chat/ChatDataSource';
 import { MessageDataSource } from '../../viewmodel/Message/MessageDataSource';
 import { ChatDetailMessageActions } from '../../viewmodel/Message/ChatDetailMessageActions';
 import { ChatType, loadHistoryMessages, forwardMessages, NativeMessage, NativeSeenChat } from '../../api';
-import { curves, LengthMetrics, LengthUnit, promptAction } from '@kit.ArkUI';
+import { curves, promptAction } from '@kit.ArkUI';
+import {
+  HeaderAvatar,
+  HeaderGradientBlur,
+  HeaderIconButton,
+  HeaderTitleCapsule,
+  HdsHeaderMetrics,
+  navHeaderGradientHeight
+} from '../../views/common/HdsHeaderPrimitives';
 
 @AnimatableExtend(NavDestination)
   function animatableBlur(blurRadius: number) {
@@ -68,31 +76,60 @@ export struct ChatDetail {
   private messageActions: ChatDetailMessageActions = new ChatDetailMessageActions();
   private initialMessagesLoaded: boolean = false;
   private historyPaginationArmed: boolean = false;
-
   @State messageDataSource: MessageDataSource = this.messagesOfChatMap.get(this.currentChatId) ?? new MessageDataSource();
 
   @Builder
   TitleBuilder() {
-    Column() {
-      Text(this.currentChatUserName)
-        .fontColor($r('sys.color.font_primary'))
-        .fontSize(HomeConstants.NAV_TITLE_FONT_SIZE)
-        .fontWeight(FontWeight.Medium)
-        .padding({
-          start: new LengthMetrics(8, LengthUnit.VP),
+    Stack({ alignContent: Alignment.Top }) {
+      HeaderGradientBlur({ materialHeight: navHeaderGradientHeight() })
+
+      Row() {
+        HeaderIconButton({
+          icon: $r("sys.symbol.arrow_left"),
+          buttonSize: HdsHeaderMetrics.NAV_ACTION_SIZE,
+          iconSize: 22,
         })
-        .maxLines(1)
-        .textOverflow({ overflow: TextOverflow.Ellipsis })
-    }
-    .alignItems(HorizontalAlign.Start)
-      .justifyContent(FlexAlign.Center)
-      .height('100%')
-      .onClick(() => {
-        if (this.isGroupOrChannel) {
-          Logger.debug('ChatDetail title clicked, navigating to ParticipantList');
-          this.pageInfo.pushPath({ name: 'ParticipantList' });
-        }
+          .onClick(() => {
+            this.handleBackNavigation();
+          })
+
+        HeaderTitleCapsule({
+          title: this.currentChatUserName,
+          subtitle: this.getHeaderSubtitle(),
+          capsuleWidth: BaseConstants.FULL_WIDTH,
+          capsuleHeight: HdsHeaderMetrics.NAV_TITLE_BASE_HEIGHT,
+          titleFontSize: 17,
+          subtitleFontSize: 12,
+        })
+          .layoutWeight(BaseConstants.LAYOUT_WEIGHT_ONE)
+          .margin({ left: 8, right: 8 })
+          .onClick(() => {
+            if (this.isGroupOrChannel) {
+              Logger.debug('ChatDetail title clicked, navigating to ParticipantList');
+              this.pageInfo.pushPath({ name: 'ParticipantList' });
+            }
+          })
+
+        HeaderAvatar({
+          source: HomeConstants.DEFAULT_AVATAR,
+          avatarSize: HdsHeaderMetrics.NAV_ACTION_SIZE,
+        })
+          .border({
+            width: 1,
+            color: '#80FFFFFF'
+          })
+      }
+      .alignItems(VerticalAlign.Center)
+      .height(this.getChatTitleHeight())
+      .width(BaseConstants.FULL_WIDTH)
+      .padding({
+        left: HdsHeaderMetrics.NAV_HORIZONTAL_PADDING,
+        right: HdsHeaderMetrics.NAV_HORIZONTAL_PADDING,
+        top: HdsHeaderMetrics.NAV_TITLE_TOP_PADDING,
       })
+    }
+    .height('100%')
+    .width(BaseConstants.FULL_WIDTH)
   }
 
   @Styles
@@ -271,14 +308,17 @@ export struct ChatDetail {
                 }
               })
               .margin({
-                top: index === 0 ? HomeConstants.NAV_TITLE_TOP_MARGIN_MINI : 0,
+                top: index === 0 ? this.getChatContentTopSpacerHeight() : 0,
                 bottom: index === this.length - 1 ? HomeConstants.NAV_SIGNAL_BAR_HEIGHT : 0
               })
           }, (item: Message) => `${item.chatId}-${item.messageId}`)
         }
+        .id('hg-message-list-' + this.currentChatId)
         .height(BaseConstants.FULL_HEIGHT)
           .width(BaseConstants.FULL_WIDTH)
-          .padding({ bottom: "39vp", })
+          .padding({
+            bottom: "39vp",
+          })
           .scrollBar(BarState.Off)
           .edgeEffect(EdgeEffect.Spring, { alwaysEnabled: true })
           .messageAnimationStyle()
@@ -345,20 +385,52 @@ export struct ChatDetail {
             replyToMessageId: this.replyToMessageId,
           })
         }
+        .id('hg-chat-composer-' + this.currentChatId)
       }
       .height(BaseConstants.FULL_HEIGHT)
         .width(BaseConstants.FULL_WIDTH)
     }
-    .expandSafeArea([SafeAreaType.SYSTEM])
-      .title(this.TitleBuilder, {
-        backgroundColor: this.titleAndTabBarColor,
-        backgroundBlurStyle: this.blurStyle,
-        barStyle: BarStyle.STACK,
-      })
-      // .hideTitleBar(true)
+    .title({
+      builder: () => {
+        this.TitleBuilder();
+      },
+      height: navHeaderGradientHeight(),
+    }, {
+      backgroundColor: Color.Transparent,
+      backgroundBlurStyle: BlurStyle.NONE,
+      barStyle: BarStyle.STACK,
+    })
+      .hideBackButton(true)
+      .backgroundColor(Color.Transparent)
       .blur(this.isShowMediaSheet ? this.continuousChatDetailBlurRadius : 0)
 
     // .animatableBlur(this.discreteChatDetailBlurRadius == 0 ? 0 : this.continuousChatDetailBlurRadius)
+  }
+
+  private getChatTitleHeight(): number {
+    return HdsHeaderMetrics.NAV_TITLE_BASE_HEIGHT + HdsHeaderMetrics.NAV_TITLE_TOP_PADDING;
+  }
+
+  private getHeaderSubtitle(): string {
+    if (this.isGroupOrChannel) {
+      return 'tap for details';
+    }
+
+    return 'last seen a long time ago';
+  }
+
+  private getChatContentTopSpacerHeight(): Length {
+    return navHeaderGradientHeight() + 10;
+  }
+
+  private handleBackNavigation(): void {
+    if (this.currentBreakpoint === BreakpointConstants.BREAKPOINT_SM) {
+      this.pageInfo.clear();
+      return;
+    }
+
+    this.pageInfo.clear();
+    this.pageInfo.pushPath({ name: 'ChatDetailNone' });
   }
 
   aboutToAppear(): void {
@@ -373,7 +445,7 @@ export struct ChatDetail {
     let chat = this.chatDataSource.get(this.currentChatId);
     this.chatType = chat?.chatType || ChatType.User;
     this.isGroupOrChannel = this.chatType === ChatType.Group || this.chatType === ChatType.Channel;
-    // 如果 chatDataSource 中没有,尝试从 seenChatsMap 中获取用户名
+    // If chatDataSource does not have a name, try reading the username from seenChatsMap.
     if (chat?.name) {
       this.currentChatUserName = chat.name;
     } else {
@@ -397,16 +469,16 @@ export struct ChatDetail {
   }
 
   /**
-   * 判断是否应该显示用户名
-   * 如果相邻消息的发送者是同一人且时间间隔不超过10分钟，则不显示用户名
+   * Check whether the username should be shown.
+   * Hide the username when adjacent messages are from the same sender within 10 minutes.
    */
   private shouldShowUserName(currentMessage: Message, currentIndex: number): boolean {
-    // 对于私聊或者发出的消息，不显示用户名
+    // Do not show usernames for private chats or outgoing messages.
     if (this.chatType === ChatType.User || currentMessage.outgoing) {
       return false;
     }
 
-    // 第一条消息总是显示用户名
+    // Always show the username for the first message.
     if (currentIndex === 0) return true;
 
     const previousMessage = this.messageDataSource?.get(currentIndex - 1);
@@ -456,11 +528,11 @@ export struct ChatDetail {
       if (historyMessages.length > 0) {
         Logger.debug('ChatDetail loadHistoryMessages: loaded ' + historyMessages.length + ' history messages');
 
-        // 将 NativeMessage 转换为 Message 并添加到数据源
+        // Convert NativeMessage values to Message and add them to the data source.
         const messages = historyMessages.map((nativeMsg: NativeMessage) => Message.fromNative(nativeMsg));
         this.messageDataSource.upsertMany(messages);
 
-        // 更新长度
+        // Update length.
         this.length = this.messageDataSource.totalCount();
         const anchorIndex = this.messageDataSource.indexOf(oldestMessageId);
         if (anchorIndex >= 0) {

@@ -17,6 +17,7 @@ export struct Me {
         chatId: this.meInfo ? this.meInfo.chatId.toString() : '',
         title: $r('app.string.me'),
         device: deviceInfo.versionId ?? "HarmonyOS NEXT",
+        isRootTab: true,
       })
     }.onAppear(async () => {
       this.meInfo = await getMe();

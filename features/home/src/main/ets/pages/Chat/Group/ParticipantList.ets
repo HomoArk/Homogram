@@ -1,10 +1,16 @@
-﻿import { BaseConstants, BreakpointConstants, Logger } from '@ohos/base';
-import { HomeConstants } from '../../../constants/HomeConstants';
+import { BaseConstants, BreakpointConstants, Logger } from '@ohos/base';
 import { ParticipantItem } from '../../../views/Chat/ParticipantItem';
 import { ChatDataSource } from '../../../viewmodel/Chat/ChatDataSource';
-import { getParticipants, NativeParticipant, ChatType } from '../../../api';
+import { getParticipants, NativeParticipant } from '../../../api';
 import { deviceInfo } from '@kit.BasicServicesKit';
 import { curves } from '@kit.ArkUI';
+import {
+  HeaderGradientBlur,
+  HeaderIconButton,
+  HeaderTitleCapsule,
+  HdsHeaderMetrics,
+  navHeaderGradientHeight
+} from '../../../views/common/HdsHeaderPrimitives';
 
 @Component
 export struct ParticipantList {
@@ -18,6 +24,49 @@ export struct ParticipantList {
   @State chatName: string = '';
   @State participantCount: number = 0;
   private scroller: Scroller = new Scroller();
+
+  @Builder
+  TitleBuilder() {
+    Stack({ alignContent: Alignment.Top }) {
+      HeaderGradientBlur({ materialHeight: navHeaderGradientHeight() })
+
+      Row() {
+        HeaderIconButton({
+          icon: $r("sys.symbol.arrow_left"),
+          buttonSize: HdsHeaderMetrics.NAV_ACTION_SIZE,
+          iconSize: 22,
+        })
+          .onClick(() => {
+            this.pageInfo.pop();
+          })
+
+        HeaderTitleCapsule({
+          title: this.chatName.length > 0 ? this.chatName : 'Members',
+          subtitle: this.participantCount > 0 ? this.participantCount.toString() : '',
+          capsuleWidth: BaseConstants.FULL_WIDTH,
+          capsuleHeight: HdsHeaderMetrics.NAV_TITLE_BASE_HEIGHT,
+        })
+          .layoutWeight(BaseConstants.LAYOUT_WEIGHT_ONE)
+          .margin({ left: 8, right: 8 })
+
+        HeaderIconButton({
+          icon: $r('sys.symbol.more'),
+          buttonSize: HdsHeaderMetrics.NAV_ACTION_SIZE,
+          iconSize: 22,
+        })
+      }
+      .alignItems(VerticalAlign.Center)
+      .height(BaseConstants.FULL_HEIGHT)
+      .width(BaseConstants.FULL_WIDTH)
+      .padding({
+        left: HdsHeaderMetrics.NAV_HORIZONTAL_PADDING,
+        right: HdsHeaderMetrics.NAV_HORIZONTAL_PADDING,
+        top: HdsHeaderMetrics.NAV_TITLE_TOP_PADDING,
+      })
+    }
+    .height(BaseConstants.FULL_HEIGHT)
+    .width(BaseConstants.FULL_WIDTH)
+  }
 
   build() {
     NavDestination() {
@@ -59,7 +108,7 @@ export struct ParticipantList {
           List({ scroller: this.scroller }) {
             ListItem() {
               Row()
-                .height(HomeConstants.NAV_TITLE_TOP_MARGIN_MINI)
+                .height(this.getContentTopSpacerHeight())
                 .width(BaseConstants.FULL_WIDTH)
             }
 
@@ -69,7 +118,7 @@ export struct ParticipantList {
                   participant: participant
                 })
                   .onClick(() => {
-                    // TODO: 点击参与者跳转到个人资料页面
+                    // TODO: Open the participant profile page when tapped.
                     Logger.debug('ParticipantList: clicked participant ' + participant.userId);
                   })
               }
@@ -96,7 +145,16 @@ export struct ParticipantList {
       .height(BaseConstants.FULL_HEIGHT)
       .width(BaseConstants.FULL_WIDTH)
     }
-    .title(this.chatName)
+    .title({
+      builder: () => {
+        this.TitleBuilder();
+      },
+      height: HdsHeaderMetrics.NAV_TITLE_BASE_HEIGHT + HdsHeaderMetrics.NAV_TITLE_TOP_PADDING,
+    }, {
+      backgroundColor: Color.Transparent,
+      barStyle: BarStyle.STANDARD,
+    })
+    .hideBackButton(true)
     .expandSafeArea([SafeAreaType.SYSTEM])
   }
 
@@ -125,6 +183,10 @@ export struct ParticipantList {
     } finally {
       this.isLoading = false;
     }
+  }
+
+  private getContentTopSpacerHeight(): Length {
+    return HdsHeaderMetrics.NAV_TITLE_BASE_HEIGHT + HdsHeaderMetrics.NAV_TITLE_TOP_PADDING + 16;
   }
 }
 

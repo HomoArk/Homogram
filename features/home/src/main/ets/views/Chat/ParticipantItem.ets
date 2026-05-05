@@ -1,4 +1,4 @@
-﻿import { BaseConstants, BreakpointConstants, Logger } from '@ohos/base';
+import { BaseConstants, BreakpointConstants, Logger } from '@ohos/base';
 import { HomeConstants } from '../../constants/HomeConstants';
 import { NativeParticipant, NativeParticipantRole } from '../../api';
 import { image } from '@kit.ImageKit';
@@ -12,7 +12,7 @@ export struct ParticipantItem {
 
   build() {
     Flex({ alignItems: ItemAlign.Center }) {
-      // 澶村儚
+      // Avatar.
       if (this.isPixelMapReady && this.profilePhotoPixelMap) {
         Image(this.profilePhotoPixelMap)
           .height(HomeConstants.PROFILE_PHOTO_SIZE)
@@ -20,7 +20,7 @@ export struct ParticipantItem {
           .borderRadius(HomeConstants.PROFILE_PHOTO_SIZE / 2)
           .margin({ left: $r('app.float.icon_margin_one'), right: $r('app.float.icon_margin_one') })
       } else {
-        // 榛樿澶村儚锛屾樉绀洪瀛楁瘝
+        // Default avatar: show initials.
         Column() {
           Text(this.getInitials())
             .fontSize(BaseConstants.FONT_SIZE_SIXTEEN)
@@ -45,7 +45,7 @@ export struct ParticipantItem {
             .lineHeight($r('app.float.text_line_height_two'))
             .fontFamily(BaseConstants.FONT_FAMILY_MEDIUM)
           
-          // 鏄剧ず瑙掕壊鏍囩
+          // Show role badge.
           if (this.participant?.role === NativeParticipantRole.Creator) {
             Text($r('app.string.role_creator'))
               .fontSize(BaseConstants.FONT_SIZE_TEN)
@@ -101,7 +101,7 @@ export struct ParticipantItem {
   }
 
   private getAvatarColor(): Color {
-    // 鏍规嵁鐢ㄦ埛 ID 鐢熸垚涓€涓浐瀹氱殑棰滆壊
+    // Generate a stable color from the user ID.
     const userId: number = this.participant?.userId || 0;
     const colors: Color[] = [
       0xFF5722 as Color, // Deep Orange
@@ -117,7 +117,7 @@ export struct ParticipantItem {
   }
 
   async aboutToAppear(): Promise<void> {
-    // 灏濊瘯浠?photoThumb 鍒涘缓 PixelMap
+    // Try to create a PixelMap from photoThumb.
     if (this.participant?.photoThumb && this.participant.photoThumb.length > 0) {
       try {
         const buffer = new ArrayBuffer(this.participant.photoThumb.length);

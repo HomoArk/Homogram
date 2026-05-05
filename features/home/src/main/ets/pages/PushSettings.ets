@@ -10,7 +10,7 @@ export struct PushSettings {
   @State isTesting: boolean = false;
   @State isUnregistering: boolean = false;
   @State statusType: string = ''; // 'enter_nickname', 'registering', 'register_success', 'register_failed', 'register_first', 'testing', 'test_sent', 'test_failed', 'unregistering', 'unregister_success', 'unregister_failed'
-  @State statusDetail: string = ''; // 用于存储额外信息如返回值或错误信息
+  @State statusDetail: string = ''; // Stores extra details such as return values or error messages.
   @Consume('pageInfo') pageInfo: NavPathStack;
   
   private pushService: PushService | null = null;
@@ -43,7 +43,7 @@ export struct PushSettings {
           console.info('showDialog err: ' + err);
           return;
         }
-        // 拉起应用市场
+        // Open AppGallery.
         const want: Want = {
           uri: `store://appgallery.huawei.com/app/detail?id=${CHUCKFANG_APP_ID}`
         }
@@ -158,7 +158,7 @@ export struct PushSettings {
     NavDestination() {
       Scroll() {
         Column({ space: 20 }) {
-          // 引导信息
+          // Guidance.
           Column({ space: 12 }) {
             Text($r('app.string.push_install_app_first'))
               .fontSize(BaseConstants.FONT_SIZE_FOURTEEN)
@@ -179,7 +179,7 @@ export struct PushSettings {
 
           Divider()
 
-          // Nickname 输入
+          // Nickname input.
           Column({ space: 8 }) {
             Text($r('app.string.push_nickname'))
               .fontSize(BaseConstants.FONT_SIZE_SIXTEEN)
@@ -207,7 +207,7 @@ export struct PushSettings {
           }
           .width('100%')
 
-          // 操作按钮
+          // Action buttons.
           Column({ space: 12 }) {
             Button(this.isSaving ? $r('app.string.push_registering_loading') : $r('app.string.push_register_button'))
               .width('100%')
@@ -235,7 +235,7 @@ export struct PushSettings {
           }
           .width('100%')
 
-          // 状态消息
+          // Status message.
           if (this.statusType === 'enter_nickname') {
             Text($r('app.string.push_enter_nickname'))
               .fontSize(14)
@@ -384,7 +384,7 @@ export struct PushSettings {
 
           Blank()
 
-          // 说明信息
+          // Instructions.
           Column({ space: 8 }) {
             Text($r('app.string.push_instructions_title'))
               .fontSize(16)

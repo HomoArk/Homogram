@@ -43,6 +43,7 @@ import { EventConstants } from '../constants/EventConstants';
 import { Contacts } from './Contacts';
 import { Me } from './Me';
 import { common } from '@kit.AbilityKit';
+import { HdsHeaderStyle } from '../views/common/HdsHeaderPrimitives';
 
 @Entry
 @Component
@@ -110,11 +111,12 @@ export struct Index {
   private allowedCustomTransitionToPageName: string[] = ['TopicList'];
   private readonly tabFloatingStyle: HdsTabsFloatingStyle = {
     barWidth: {
-      smallWidth: '90%',
-      mediumWidth: '60%',
-      largeWidth: '48%'
+      smallWidth: 288,
+      mediumWidth: 288,
+      largeWidth: 288
     },
-    barBottomMargin: 28,
+    barBottomMargin: 8,
+    lightColor: HdsHeaderStyle.FLOATING_FILL,
     systemMaterialEffect: {
       materialType: hdsMaterial.MaterialType.ADAPTIVE,
       materialLevel: hdsMaterial.MaterialLevel.ADAPTIVE
@@ -247,9 +249,11 @@ export struct Index {
             selected: new SymbolGlyphModifier($r('sys.symbol.person_fill')),
           }, HomeConstants.TAB_BAR_TEXTS[2]))
         }
+        .id('hg-home-tabs')
         .scrollable(false)
         .vertical(this.currentBreakpoint !== BreakpointConstants.BREAKPOINT_SM)
         .barOverlap(true)
+        .barWidth(this.currentBreakpoint === BreakpointConstants.BREAKPOINT_SM ? 288 : $r('app.float.bar_width'))
         .divider({ mode: DividerMode.NONE })
         .barFloatingStyle(this.currentBreakpoint === BreakpointConstants.BREAKPOINT_SM ? this.tabFloatingStyle : undefined)
         .height(BaseConstants.FULL_HEIGHT)
@@ -261,6 +265,7 @@ export struct Index {
         .animationDuration(300)
         .animation({ curve: curves.springMotion(0.6, 0.8) })
       }
+      .id('hg-home-navigation')
       .bindSheet($$this.isShowNewMessageSheet, this.NewMessageSheet, {
         height: '100%',
         dragBar: false,
