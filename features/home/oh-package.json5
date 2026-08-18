@@ -9,7 +9,7 @@
   "dynamicDependencies": {},
   "dependencies": {
     "@ohos/base": "file:../../common/base",
-    "libhomogrape.so": "file:./src/main/native/homogrape/dist",
+    "libhomogrape.so": "file:./src/main/cpp/types/libhomogrape",
     "class-transformer": "^0.5.1",
     "reflect-metadata": "^0.1.13",
     "@wolfx/json5": "^2.2.3-rc.1",
