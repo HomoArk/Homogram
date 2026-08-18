@@ -51,14 +51,22 @@ A detailed Roadmap can be found in the [Homogram Project](https://github.com/org
    ```shell
    git clone https://github.com/HomoArk/Homogram.git --recursive
    ```
+   The `homogrape` checkout is required to **build** `libhomogrape.so`. ohpm itself resolves
+   `libhomogrape.so` from the in-tree types package at
+   `features/home/src/main/cpp/types/libhomogrape`, so DevEco sync no longer depends on
+   `homogrape/dist` existing.
 2. [Obtain your own api_id](https://core.telegram.org/api/obtaining_api_id) for your application.
-3. Fill out values into `features/home/src/main/rust/src/tg/config.rs` (there is a template file
+3. Fill out values into `features/home/src/main/native/homogrape/src/tg/config.rs` (there is a template file
    `config.rs.template`).
 4. Setup Rust toolchain and ohos-rs for OpenHarmony: https://ohos.rs/docs/basic/quick-start.html
-5. Build the native library in `features/home/src/main/native/homogrape`:
+5. Build the native library in `features/home/src/main/native/homogrape` and stage it where Hvigor
+   packages HAR/HAP native libs (`features/home/libs/arm64-v8a`):
    ```shell
    cargo xtask dist ../../../../libs/arm64-v8a/
    ```
+   That command runs `ohrs build --arch=aarch` and copies `libhomogrape.so` into
+   `features/home/libs/arm64-v8a`. Do not skip this step: the `.so` is a build artifact and is
+   not committed.
 6. Correctly [configure](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides-V5/ide-signing-V5) the signature
    information, and build the project in DevEco Studio.
 7. Enjoy! (Or not, because it's still very feature-incomplete and suboptimal)

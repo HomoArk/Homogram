@@ -3,6 +3,14 @@
   "buildOption": {
     "arkOptions": {
       // "apPath": "./modules.ap"  /* Profile used for profile-guided optimization (PGO), a compiler optimization technique to improve app runtime performance. */
+    },
+    "externalNativeOptions": {
+      "abiFilters": [
+        "arm64-v8a"
+      ]
+    },
+    "nativeLib": {
+      "collectAllLibs": true
     }
   },
   "buildOptionSet": [

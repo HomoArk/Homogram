@@ -74,7 +74,9 @@ Current local setup:
 
 The HAP entry module is `phone` (`products/phone`).
 
-Use the HarmonyOS Hvigor tooling after the native `.so` has been copied into `features/home/src/main/libs/arm64-v8a`.
+Use the HarmonyOS Hvigor tooling after the native `.so` has been copied into `features/home/libs/arm64-v8a`.
+ohpm resolves `libhomogrape.so` from `features/home/src/main/cpp/types/libhomogrape` (types only).
+The binary itself is packaged from `features/home/libs/arm64-v8a`.
 
 Preferred command shape for this repo, matching the recorded local Hvigor invocation in `.hvigor/report`:
 

@@ -1,0 +1,6 @@
+{
+  "name": "libhomogrape.so",
+  "types": "./index.d.ts",
+  "version": "1.0.0",
+  "description": "Homogram native Telegram bindings (libhomogrape.so)"
+}
